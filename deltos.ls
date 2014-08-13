@@ -134,14 +134,8 @@ update-symlinks = ->
   title-grouped = group-by (-> cleanup-title it.title), entries |> yank-ids
   update-symlink-dir 'by-title', title-grouped
 
-  fix-date = ->
-    check = it.to-string!split(\T).0
-    if check.length < 1
-      return it
-    else
-      return check
-
-  date-grouped = group-by (-> fix-date it.date), entries |> yank-ids
+  date-trim = -> it.date.toISOString!split('T').0
+  date-grouped = group-by date-trim, entries |> yank-ids
   update-symlink-dir 'by-date', date-grouped
 
   tags = map (.tags), entries |> concat |> unique
