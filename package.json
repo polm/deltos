@@ -1,0 +1,32 @@
+{
+  "name": "deltos",
+  "version": "0.0.0",
+  "description": "Note management with flat files.",
+  "main": "deltos.js",
+  "dependencies": {
+    "LiveScript": "^1.2.0",
+    "prelude-ls": "^1.1.1",
+    "terminal-menu": "^0.3.2",
+    "js-yaml": "^3.1.0",
+    "marked": "^0.3.2",
+    "node-uuid": "^1.4.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "false"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/polm/deltos.git"
+  },
+  "keywords": [
+    "notes",
+    "wiki"
+  ],
+  "author": "Paul O'Leary McCann (polm23)",
+  "license": "WTFPL",
+  "bugs": {
+    "url": "https://github.com/polm/deltos/issues"
+  },
+  "homepage": "https://github.com/polm/deltos"
+}
