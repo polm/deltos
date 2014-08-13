@@ -37,6 +37,9 @@ This makes it easy to use anything that interfaces with a filesystem
 adequately; shell is enough but higher-level languages aren't ruled out.
 The weaknesses of the fs-as-db are strengths here.
 
+Metadata is stored as a YAML header termined by a YAML document separator
+(`---` on a line by itself), similar to Jekyll.
+
 ## Shown title, hidden link 
 
 A basic scheme for showing one thing and connecting to another: .(My
@@ -54,10 +57,6 @@ deltos new [title]
 
   Give a filename for a new note, initialized with basic metadata. 
 
-deltos edit [link]
-
-  Takes a link (or plain uuid) and opens it with $EDITOR. 
-
 deltos update
 
   Update symlink directories to reflect metadata. What metadata to use can be
@@ -66,9 +65,9 @@ deltos update
 
 ## Directory structure
 
-DELTOS_HOME/
+${DELTOS_HOME}/
 
-  root.
+  root, defaults to `~/.deltos`.
 
 by-id/
 
@@ -88,3 +87,9 @@ by-title/
 by-date/
 
   Notes by day. 
+
+## License
+
+CC0, WTFPL, Kopyleft All Rites Reversed. Do as you like. 
+
+-POLM
