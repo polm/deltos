@@ -1,11 +1,11 @@
 
-     _      _ _            
-  __| | ___| | |_ ___  ___ 
- / _` |/ _ \ | __/ _ \/ __|
-| (_| |  __/ | || (_) \__ \
- \__,_|\___|_|\__\___/|___/
-                           
-===============================
+         _      _ _            
+      __| | ___| | |_ ___  ___ 
+     / _` |/ _ \ | __/ _ \/ __|
+    | (_| |  __/ | || (_) \__ \
+     \__,_|\___|_|\__\___/|___/
+                               
+    ===============================
 
 Deltos is a tool for managing personal information. 
 
@@ -65,28 +65,28 @@ deltos update
 
 ## Directory structure
 
-${DELTOS_HOME}/
+    ${DELTOS_HOME}/
 
-  root, defaults to `~/.deltos`.
+root, defaults to `~/.deltos`.
 
-by-id/
+    by-id/
 
-  this contains the real files immediately beneath it.
+this contains the real files immediately beneath it.
 
-by-tag/
+    by-tag/
 
-  this contains a directory for each tag with symlinks to each article.
+this contains a directory for each tag with symlinks to each article.
 
-by-title/
+    by-title/
 
-  this contains a directory for each title with symlinks to each article. Note
-  that tiles can be escaped to web slugs or otherwise simplified, causing some
-  collisions. This is at least partly inevitable due to the reserved use of "/"
-  in Unix systems.
+this contains a directory for each title with symlinks to each article. Note
+that tiles can be escaped to web slugs or otherwise simplified, causing some
+collisions. This is at least partly inevitable due to the reserved use of "/"
+in Unix systems.
 
-by-date/
+    by-date/
 
-  Notes by day. 
+Notes by day. 
 
 ## License
 
