@@ -221,17 +221,6 @@ search-tag-pipe = ->
   process.stdout.on \error, -> process.exit 0 # This handles piping to head
   search-tag!map (-> console.log it.id)
 
-title-block = ->
-  #TODO escape characters
-  '<div id="title"><div id="title-box"><h1>' + it + '</h1></div></div>'
-
-body-block = ->
-  '<div id="body"><div class="column">' + it + '</div></div>'
-
-background-block = ->
-  # This is just a cheap trick to easily change the bg image.
-  "<style> \#body {background-image: url(#{it})}</style>"
-
 build-page = (eep, content) ->
   template = fs.read-file-sync (deltos-home + \single.html), \utf-8 |> jsdom
   eep.push template.body, content
