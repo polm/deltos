@@ -3,9 +3,12 @@ ls = require \LiveScript
 fs = require \fs
 yaml = require \js-yaml
 markdown = require \marked
-{Obj, filter, keys, values, group-by, concat, unique, map, take, sort-by} = require \prelude-ls
+{Obj, filter, keys, values, group-by, concat, unique, map, take, sort-by, reverse} = require \prelude-ls
 uuid = require \node-uuid
 create-menu = require \terminal-menu
+eep = require \./equaeverpoise
+Section = eep.Section
+jsdom = require(\jsdom).jsdom
 
 deltos-home = (process.env.DELTOS_HOME + '/') or '~/.deltos/'
 # XXX note that eval'd code has full access to the calling context 
@@ -13,23 +16,42 @@ deltos-home = (process.env.DELTOS_HOME + '/') or '~/.deltos/'
 eval-ls = ->
   eval ls.compile it, bare: true
 
-# RESOURCES
+is-in = (list, item) --> -1 < list.index-of item
+tagged = (tag, entry) --> (not tag) or is-in entry.tags, tag # On a null tag, this is always true
+no-empty = -> it.filter (-> not (it == null or it == '') )
+begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 
 get-filename = ->
   deltos-home + '/by-id/' + it
 
+deltos-link-to-html = ->
+  link-regex = /\.\(([^\/]*)\/\/([^\)]*)\)/g
+  it.replace link-regex, (matched, label, dest) -> "<a href=\"/by-id/#{dest}.html\">#{label}</a>"
+
 read-entry-body = ->
   expanded = ''
   for line in it.split "\n"
-    if line[0] == \]
-        expanded += eval-ls line.substr 1
-    else expanded += line
-    expanded += "\n"
+    if begins-with \], line
+        line = eval-ls line.substr 1
+    else if begins-with \!, line
+      line = line.slice 1 # discard exclamation
+      words = line.split ' '
+      command = words.shift!
+      switch command
+      | \img =>
+        img-tag = "<p class=\"img\"><img src=\"#{words.shift!}\"/></p>"
+        caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
+        line = img-tag + caption
+      | otherwise => \noop # unknown word, maybe throw error?
+    expanded += line + "\n"
+  expanded = deltos-link-to-html expanded
   return markdown expanded
 
 read-entry = ->
   [header, body] = it.split "\n---\n"
   metadata = yaml.safe-load header
+  if metadata.date.toISOString
+    metadata.date = metadata.date.toISOString!
   #TODO tags don't all have commas, add them
   if not metadata.title
       metadata.title = 'untitled'
@@ -58,12 +80,9 @@ read-entry-from-file = ->
   entry = fs.read-file-sync it, \utf-8
   read-entry entry
 
-entries = []
-get-entries = ->
+get-all-entries = ->
   for ff in fs.readdir-sync BASEDIR
     read-entry-from-file BASEDIR + ff
-
-entries = get-entries!
 
 by-title = (title, entries) -->
   entries.filter (.title == title)
@@ -73,7 +92,6 @@ has-tag = (tag, entries) -->
 
 recent-first = (entries) ->
   sort-by (.date), entries
-
 
 new-note = ->
   # get a new uuid
@@ -131,10 +149,16 @@ update-symlinks = ->
 
   yank-ids = -> Obj.map (-> map (.id), it), it
 
+  entries = get-all-entries!
+
   title-grouped = group-by (-> cleanup-title it.title), entries |> yank-ids
   update-symlink-dir 'by-title', title-grouped
 
-  date-trim = -> it.date.toISOString!split('T').0
+  date-trim = ->
+    if it.date.toISOString
+      it.date.toISOString!split('T').0
+    else
+      it.date.split('T').0
   date-grouped = group-by date-trim, entries |> yank-ids
   update-symlink-dir 'by-date', date-grouped
 
@@ -186,16 +210,91 @@ search-tag = ->
         id: ff
         mtime: fs.stat-sync(deltos-home + '/by-id/' + ff).mtime
       files.push file
-    select-menu files
+    files = sort-by (.mtime), files
+    return files
   catch ee
     console.error "No such tag."
     process.exit 1
+
+search-tag-interactive = -> select-menu search-tag!
+search-tag-pipe = ->
+  process.stdout.on \error, -> process.exit 0 # This handles piping to head
+  search-tag!map (-> console.log it.id)
+
+title-block = ->
+  #TODO escape characters
+  '<div id="title"><div id="title-box"><h1>' + it + '</h1></div></div>'
+
+body-block = ->
+  '<div id="body"><div class="column">' + it + '</div></div>'
+
+background-block = ->
+  # This is just a cheap trick to easily change the bg image.
+  "<style> \#body {background-image: url(#{it})}</style>"
+
+build-page = (eep, content) ->
+  template = fs.read-file-sync (deltos-home + \single.html), \utf-8 |> jsdom
+  eep.push template.body, content
+  console.log template.children.0.outerHTML
+
+entry-rules = ->
+  page = new Section!
+  page.rule \h1, \title
+  page.rule \.date, \date
+  page.rule \.content, \body
+  link-pusher = (el, link) -> el.href = link
+  page.rule \.article-link, \link, {push: link-pusher}
+  return page
+
+render = ->
+  entry = read-entry-from-file get-filename it
+  entry.link = '/by-id/' + entry.id + \.html
+  build-page entry-rules!, entry
+
+read-stdin-as-lines-then = (func) ->
+  buf = ''
+  process.stdin.set-encoding \utf-8
+  process.stdin.on \data, -> buf += it
+  process.stdin.on \end, -> func (buf.split "\n" |> no-empty)
+
+render-log = -> # For showing several articles, like a log
+  # read the list from stdin
+  read-stdin-as-lines-then (lines) ->
+    entries = lines.map -> read-entry-from-file get-filename it
+    entries.map (-> it.link = '/by-id/' + it.id + \.html; return it) # make sure they have a link
+
+    page = new Section!
+    page.list-rule \#column, \entries, entry-rules!
+
+    build-page page, {entries: entries}
+
+entry-to-markdown-link = -> "- [#{it.title}](/by-id/#{it.id}.html)"
+entry-to-link = -> "- .(#{it.title}//#{it.id})"
+print-result = (func) -> return -> console.log func ...
+
+as-markdown-links = ->
+  read-stdin-as-lines-then (lines) ->
+    entries = lines.map -> read-entry-from-file get-filename it
+    entries.map print-result entry-to-markdown-link
+
+recent = ->
+  tag = it or process.argv.3 or \published
+  get-all-entries! |>
+    filter (-> tagged tag, it) |>
+    sort-by (.date) |>
+    reverse |>
+    map (-> (print-result entry-to-link) it)
+
 
 switch process.argv.2
 | \new => new-note!
 | \update => update-symlinks!
 | \stit => search-title!
 | \search-title => search-title!
-| \stag => search-tag!
-| \search-tag => search-tag!
+| \stag => search-tag-pipe!
+| \search-tag => search-tag-pipe!
+| \render => render process.argv.3
+| \render-log => render-log!
+| \as-markdown-links => as-markdown-links!
+| \recent => recent!
 | otherwise => console.log "Unknown command, try again."
