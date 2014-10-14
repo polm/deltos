@@ -9,6 +9,8 @@ create-menu = require \terminal-menu
 eep = require \./equaeverpoise
 Section = eep.Section
 jsdom = require(\jsdom).jsdom
+child-process = require \child_process
+spawn = child-process.spawn
 
 deltos-home = (process.env.DELTOS_HOME + '/') or '~/.deltos/'
 # XXX note that eval'd code has full access to the calling context 
@@ -27,6 +29,13 @@ get-filename = ->
 deltos-link-to-html = ->
   link-regex = /\.\(([^\/]*)\/\/([^\)]*)\)/g
   it.replace link-regex, (matched, label, dest) -> "<a href=\"/by-id/#{dest}.html\">#{label}</a>"
+
+init = -> # create the empty directories needed
+  fs.mkdir-sync deltos-home
+  fs.mkdir-sync deltos-home + '/by-id'
+  fs.mkdir-sync deltos-home + '/by-tag'
+  fs.mkdir-sync deltos-home + '/by-title'
+  fs.mkdir-sync deltos-home + '/by-date'
 
 read-entry-body = ->
   expanded = ''
@@ -110,7 +119,10 @@ new-note = ->
          "---\n"].join "\n"
   fs.write-file-sync fname, buf
   # finally print the name so it can be used
-  console.log fname
+  return fname
+
+print-new-note-name = ->
+  console.log new-note!
 
 update-symlink-dir = (path, matches) ->
   # get all dirs that exist 
@@ -274,9 +286,23 @@ recent = ->
     reverse |>
     map (-> (print-result entry-to-link) it)
 
+launch-editor = (file, after) ->
+  # from here:
+  # https://gist.github.com/Floby/927052
+  cp = spawn process.env.EDITOR, [file], {
+    custom-fds: [
+      process.stdin,
+      process.stdout,
+      process.stderr
+    ]
+  }
+
+  after?!
+
+write-post = -> launch-editor new-note!, update-symlinks
 
 switch process.argv.2
-| \new => new-note!
+| \new => print-new-note-name!
 | \update => update-symlinks!
 | \stit => search-title!
 | \search-title => search-title!
@@ -286,4 +312,6 @@ switch process.argv.2
 | \render-log => render-log!
 | \as-markdown-links => as-markdown-links!
 | \recent => recent!
+| \post => write-post!
+| \init => init!
 | otherwise => console.log "Unknown command, try again."
