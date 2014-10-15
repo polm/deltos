@@ -19,7 +19,7 @@ license: \WTFPL
 dependencies:
   LiveScript: \^1.3.0
   'js-yaml': \^3.2.2
-  jsdom: \^1.0.4
+  jsdom: \^1.0.3
   marked: \^0.3.2
   'node-uuid': \^1.4.1
   'prelude-ls': \^1.1.1
