@@ -1,6 +1,6 @@
 {
   "name": "deltos",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Deltos is a note management tool using flat files.",
   "keywords": [
     "notes",
@@ -15,13 +15,13 @@
   "license": "WTFPL",
   "dependencies": {
     "Livescript": "^1.3.0",
-    "jsYaml": "^3.2.2",
+    "js-yaml": "^3.2.2",
     "jsdom": "^1.0.4",
     "marked": "^0.3.2",
-    "nodeUuid": "^1.4.1",
-    "preludeLs": "^1.1.1",
+    "node-uuid": "^1.4.1",
+    "prelude-ls": "^1.1.1",
     "split": "^0.3.0",
-    "terminalMenu": "^0.3.2"
+    "terminal-menu": "^0.3.2"
   },
   "devDependencies": {},
   "engines": {

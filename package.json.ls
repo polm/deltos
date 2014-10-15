@@ -1,5 +1,5 @@
 name: \deltos
-version: \1.0.1
+version: \1.0.2
 
 description: "Deltos is a note management tool using flat files."
 
@@ -18,13 +18,13 @@ license: \WTFPL
 
 dependencies:
   Livescript: \^1.3.0
-  js-yaml: \^3.2.2
+  'js-yaml': \^3.2.2
   jsdom: \^1.0.4
   marked: \^0.3.2
-  node-uuid: \^1.4.1
-  prelude-ls: \^1.1.1
+  'node-uuid': \^1.4.1
+  'prelude-ls': \^1.1.1
   split: \^0.3.0
-  terminal-menu: \^0.3.2
+  'terminal-menu': \^0.3.2
 
 dev-dependencies: {}
 
