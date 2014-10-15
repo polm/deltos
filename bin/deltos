@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-# Stolen from LiveScript's lsc. 
+// Stolen from LiveScript's lsc. 
 
 var path = require('path'),
     fs = require('fs'),

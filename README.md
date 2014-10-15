@@ -16,6 +16,7 @@ OK for some reason. Then:
 
     deltos init
     deltos post
+    cp templates/single.html $DELTOS_HOME/ # this is an example for HTML output
 
 Write a post. The header is just YAML, so feel free to add fields. Write a
 little note and put some tags in the `tags` field, comma separated. Then close
@@ -28,7 +29,6 @@ Now try this:
 That should print out some uuids. That may not look very useful, but with a
 little piping...
 
-    deltos stag top-page | head -n 1 | deltos render > index.html
     deltos stag published | head -n 5 | deltos render-log > blog.html
 
 And there you have a little website for yourself. 
