@@ -1,5 +1,5 @@
 name: \deltos
-version: \1.0.2
+version: \1.0.3
 
 description: "Deltos is a note management tool using flat files."
 
@@ -17,7 +17,7 @@ bugs: "http://github.com/polm/deltos/issues"
 license: \WTFPL
 
 dependencies:
-  Livescript: \^1.3.0
+  LiveScript: \^1.3.0
   'js-yaml': \^3.2.2
   jsdom: \^1.0.4
   marked: \^0.3.2
