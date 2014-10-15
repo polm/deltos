@@ -9,6 +9,52 @@
 
 Deltos is a tool for managing personal information. 
 
+# Getting started
+
+Make sure `bin/deltos` is in your path. Set `DELTOS_HOME` if `~/.deltos` is not
+OK for some reason. Then:
+
+    deltos init
+    deltos post
+
+Write a post. The header is just YAML, so feel free to add fields. Write a
+little note and put some tags in the `tags` field, comma separated. Then close
+your editor. 
+
+Now try this:
+
+    deltos search-tag my-tag # search-tag can be shortened to "stag"
+
+That should print out some uuids. That may not look very useful, but with a
+little piping...
+
+    deltos stag top-page | head -n 1 | deltos render > index.html
+    deltos stag published | head -n 5 | deltos render-log > blog.html
+
+And there you have a little website for yourself. 
+
+# What Deltos Is
+
+Deltos is a system for personal information management that I made for myself. 
+
+I like wikis, but setting them up can be tedious. Running a DB is a hassle, and
+I want to be able to use my own text editor.  Even if a wiki uses flat files
+there are still issues.
+
+- Unicode support is typically mediocre
+- Thinking up titles is hard
+- Links break and chaos is unleashed when titles change
+
+There are downsides to using uuid keys, but I realized I don't really care
+about them. The most important thing is **I want to start writing just by
+pushing a button.** The next most important thing is **I want to find what I've
+written before**. Tags, rich metadata, and files that work with the tools I'm
+used to (grep and so on) seemed like the best way to do that. 
+
+A secondary goal is the ability to dump documents to HTML so as to share them
+more easily. You are encouraged to rip that bit out and replace it with
+something that fits your needs. 
+ 
 # Basic Idea
 
 You create a note. A note probably has a title, has tags, and has a Body, which
@@ -21,72 +67,6 @@ various metadata fields, to link notes together, and to use outlines to
 organize notes in hierarchies when tags don't cut it. You should also be able
 to edit an article, including its metadata, without breaking links or
 disrupting the integrity of your web. 
-
-# Features, or How to Get It Done
-
-These seem to be the best way to accomplish the basic idea. 
-
-## Articles go in one directory as UUID named files
-
-Other GUID schemes are fine, but this gives every one a metadata-independent
-identity that's easy to generate without a persistent process or tricky locks.
-
-## Metadata searches are enabled by symlink directories
-
-This makes it easy to use anything that interfaces with a filesystem
-adequately; shell is enough but higher-level languages aren't ruled out.
-The weaknesses of the fs-as-db are strengths here.
-
-Metadata is stored as a YAML header termined by a YAML document separator
-(`---` on a line by itself), similar to Jekyll.
-
-## Shown title, hidden link 
-
-A basic scheme for showing one thing and connecting to another: .(My
-Title//[uuid]). No ideas for an escape yet, but dot-paren is not usual in
-really any language so it's a start.
-
-## Organization
-
-This is one script with several functions. 
-
-All functions take or can be passed a directory; the default one is ~/deltos. 
-It can be configured with an environment variable.
-
-deltos new [title]
-
-  Give a filename for a new note, initialized with basic metadata. 
-
-deltos update
-
-  Update symlink directories to reflect metadata. What metadata to use can be
-  configured, but by default directories are made based on title, tags, and
-  date (time to the day). 
-
-## Directory structure
-
-    ${DELTOS_HOME}/
-
-root, defaults to `~/.deltos`.
-
-    by-id/
-
-this contains the real files immediately beneath it.
-
-    by-tag/
-
-this contains a directory for each tag with symlinks to each article.
-
-    by-title/
-
-this contains a directory for each title with symlinks to each article. Note
-that tiles can be escaped to web slugs or otherwise simplified, causing some
-collisions. This is at least partly inevitable due to the reserved use of "/"
-in Unix systems.
-
-    by-date/
-
-Notes by day. 
 
 ## License
 
