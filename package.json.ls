@@ -1,5 +1,5 @@
 name: \deltos
-version: \1.0.3
+version: \1.0.4
 
 description: "Deltos is a note management tool using flat files."
 
