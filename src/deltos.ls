@@ -166,62 +166,6 @@ new-note = ->
 print-new-note-name = ->
   console.log new-note!
 
-update-symlink-dir = (path, matches) ->
-  # get all dirs that exist 
-  path = deltos-home + '/' + path
-  contents = fs.readdir-sync path
-  # remove unneeded ones
-  for ff in contents
-    if 0 > keys(matches).index-of ff
-      # we don't need these
-      duds = fs.readdir-sync (path + '/' + ff)
-      for dud in duds
-        # the directory should only contain symlinks
-        fs.unlink-sync (path + '/' + ff + '/' + dud)
-      fs.rmdir-sync (path + '/' + ff)
-  # add new ones
-  for key in keys matches
-    if 0 > contents.index-of(key)
-      try
-        fs.mkdir-sync (path + '/' + key)
-      catch e
-        \nothing
-    # now remove old ones and add new ones
-    dir-contents = fs.readdir-sync (path + '/' + key)
-    for ff in dir-contents
-      if 0 > matches[key].index-of ff
-        fs.unlink-sync (path + '/' + key + '/' + ff)
-    for mat in matches[key]
-      if 0 > dir-contents.index-of mat
-        fs.symlink-sync ('../../' + '/by-id/' + mat), (path + '/' + key + '/' + mat)
-
-update-symlinks = ->
-  #TODO allow custom attributes
-  #TODO only check files modified since last update
-  # for titles, tags, and day
-  cleanup-title = -> it.split('/').join '_'
-
-  yank-ids = -> Obj.map (-> map (.id), it), it
-
-  entries = get-all-entries!
-
-  title-grouped = group-by (-> cleanup-title it.title), entries |> yank-ids
-  update-symlink-dir 'by-title', title-grouped
-
-  date-trim = ->
-    if it.date.toISOString
-      it.date.toISOString!split('T').0
-    else
-      it.date.split('T').0
-  date-grouped = group-by date-trim, entries |> yank-ids
-  update-symlink-dir 'by-date', date-grouped
-
-  tags = map (.tags), entries |> concat |> unique
-  tag-grouped = {}
-  for tag in tags
-    tag-grouped[tag] = filter (-> -1 < it.tags.index-of tag), entries |> map (.id)
-  update-symlink-dir 'by-tag', tag-grouped
-
 select-menu = (files) ->
   # Sort files by mtime
   files = sort-by (.mtime), files
@@ -367,8 +311,8 @@ launch-editor = (file, after) ->
 
   after?!
 
-write-post = -> launch-editor new-note!, update-symlinks
-edit-post = -> launch-editor it, update-symlinks
+write-post = -> launch-editor new-note!
+edit-post = -> launch-editor it
 
 todo = ->
   get-all-entries! |>
@@ -434,7 +378,6 @@ all-to-json = ->
 #TODO make this a list so it can be printed in a help message
 switch process.argv.2
 | \new => print-new-note-name!
-| \update => update-symlinks!
 | \stit => search-title!
 | \search-title => search-title!
 | \stag => search-tag-pipe!
