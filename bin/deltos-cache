@@ -1,0 +1,3 @@
+#!/bin/bash
+# cache deltos json for quick search
+deltos json > ~/.deltos.cache.json

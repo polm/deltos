@@ -21,16 +21,14 @@ Write a post. The header is just YAML, so feel free to add fields. Write a
 little note and put some tags in the `tags` field, comma separated. Then close
 your editor. 
 
-Now try this:
+If you want to search using the included tools you'll need
+[jq](https://stedolan.github.io/jq/) and
+[percol](https://github.com/mooz/percol). Once those are installed you can
+search just by running: 
 
-    deltos search-tag my-tag # search-tag can be shortened to "stag"
+    deltos cache && dsearch
 
-That should print out some uuids. That may not look very useful, but with a
-little piping...
-
-    deltos stag published | head -n 5 | deltos render-log > blog.html
-
-And there you have a little website for yourself. 
+Just type to filter entries displayed, and select one from the list to edit it.
 
 # What Deltos Is
 
