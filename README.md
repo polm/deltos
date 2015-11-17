@@ -11,12 +11,11 @@ Deltos is a tool for managing personal information.
 
 # Getting started
 
-Make sure `bin/deltos` is in your path. Set `DELTOS_HOME` if `~/.deltos` is not
-OK for some reason. Then:
+Make sure `bin/deltos` is in your path. 
 
     deltos init
     deltos post
-    cp templates/single.html $DELTOS_HOME/ # this is an example for HTML output
+    cp templates/single.html ~/.deltos/ # this is an example for HTML output
 
 Write a post. The header is just YAML, so feel free to add fields. Write a
 little note and put some tags in the `tags` field, comma separated. Then close
