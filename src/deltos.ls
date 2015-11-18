@@ -1,8 +1,7 @@
 fs = require \fs
 yaml = require \js-yaml
 markdown = require \marked
-{Obj, filter, keys, values, group-by, concat, unique, map,
-  take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
+{Obj, filter, keys, values, group-by, concat, unique, map, take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
 uuid = require \node-uuid
 
 # placeholder globals; only required as needed
