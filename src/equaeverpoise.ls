@@ -3,8 +3,9 @@ prelude = require \prelude-ls
 pairs-to-obj = prelude.pairs-to-obj
 
 string2html = (el, html) ->
+  if not html then html = ''
   # el needs to be an actual node we can grab a document from
-  div = el.owner-document.create-element \div
+  div = el.create-element \div
   div.innerHTML = html
   return div.child-nodes
 
@@ -25,7 +26,7 @@ class Rule
     if @_push
       @_push root.query-selector(@selector), data[@accessor]
     else
-      root.query-selector(@selector).innerHTML = data[@accessor]
+      root.query-selector(@selector).innerHTML = data[@accessor] or ''
 
   pull: (root) ~>
     if @_pull

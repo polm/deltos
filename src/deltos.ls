@@ -1,17 +1,21 @@
-ls = require \LiveScript
 fs = require \fs
 yaml = require \js-yaml
 markdown = require \marked
-{Obj, filter, keys, values, group-by, concat, unique, map, take, sort-by, reverse, intersection} = require \prelude-ls
+{Obj, filter, keys, values, group-by, concat, unique, map,
+  take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
 uuid = require \node-uuid
-eep = require \./equaeverpoise
-Section = eep.Section
-jsdom = require(\jsdom).jsdom
-child-process = require \child_process
-spawn = child-process.spawn
-RSS = require \rss
 
-#TODO clean this up
+# placeholder globals; only required as needed
+ls = domino = RSS = eep = Section = {}
+
+# simple memoizer for thunks
+memoize = (func) ->
+  output = null
+  return ->
+    if output then return output
+    output := func!
+    return output
+
 deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
 BASEDIR = deltos-home + '/by-id/'
 get-filename = -> BASEDIR + it
@@ -23,45 +27,16 @@ eval-ls = ->
 
 is-in = (list, item) --> -1 < list.index-of item
 tagged = (tag, entry) --> (not tag) or is-in entry.tags, tag # On a null tag, this is always true
-no-empty = -> it.filter (-> not (it == null or it == '') )
-begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 
 init = -> # create the empty directories needed
   fs.mkdir-sync deltos-home
   fs.mkdir-sync BASEDIR
 
-read-config = ->
+read-config = memoize ->
   yaml.safe-load fs.read-file-sync (deltos-home + \config), \utf-8
 
 write-post = -> launch-editor new-note it
 edit-post = -> launch-editor it
-
-read-entry-body = ->
-  expanded = ''
-  for line in it.split "\n"
-    if begins-with \], line
-        line = eval-ls line.substr 1
-    else if begins-with \!, line
-      line = line.slice 1 # discard exclamation
-      words = line.split ' '
-      command = words.shift!
-      switch command
-      | \img =>
-        img-tag = "<img src=\"#{words.shift!}\"/>"
-        caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
-        line = "<div class=\"img\">" + img-tag + caption + "</div>"
-      | \video =>
-        vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
-        caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
-        line = "<div class=\"img\">" + vid-tag + caption + "</div>"
-      | \archive => line = build-list-page!join("\n")
-      | \.rule =>
-          # use the markdown thing and replace the default <p> tag
-          line = '<p class="rule">' + markdown(words.join ' ').substr 3
-      | otherwise => \noop # unknown word, maybe throw error?
-    expanded += line + "\n"
-  expanded = deltos-link-to-html expanded
-  return markdown expanded
 
 normalize-date = ->
   # This needs to be done to handle some date stupidity
@@ -85,30 +60,33 @@ read-entry = ->
   if metadata.series
     series = read-entry-from-file get-filename metadata.series
     metadata.series = "This post is part of series on <a href=\"/by-id/#{series.id}.html\">#{series.title}</a>."
-
-  # TODO remove this section, it's for importing old data
-  if metadata.tags.0.index-of(' ') > -1
-    # didn't have commas
-    metadata.tags = metadata.tags.0.split ' '
+  if metadata.parent # you can set just one parent if you want
+    if not metadata.parents then metadata.parents = []
+    metadata.parents.push metadata.parent
+    delete metadata.parent
 
   metadata.raw-body = body
   return metadata
-
-indent = -> "    " + it.split("\n").join("\n    ")
-quote-indent = -> "    > " + it.split("\n").join("\n    > ")
-
-show = -> map( (.body), it).join "\n"
-quote = -> show it |> quote-indent
-code = -> show it |> indent
 
 read-entry-from-file = ->
   entry = fs.read-file-sync it, \utf-8
   read-entry entry
 
 # use this for filtering etc.
-get-all-entries = ->
+get-all-entries = memoize ->
+  entries = {}
   for ff in fs.readdir-sync BASEDIR
-    read-entry-from-file BASEDIR + ff
+    entry = read-entry-from-file BASEDIR + ff
+    entries[entry.id] = entry
+
+  # populate "children" - this is linear time
+  for entry in entries
+    if entry.parents
+      for parent in entry.parents
+        if not entries[parent].children then entries[parent].children = []
+        entries[parent].children.push entry.id
+
+  return values entries |> sort-by (.date) |> reverse
 
 local-iso-time = ->
   # from here: http://stackoverflow.com/questions/10830357/javascript-toisostring-ignores-timezone-offset
@@ -148,6 +126,8 @@ new-note = (title="") ->
   # finally print the name so it can be used
   return fname
 
+no-empty = -> it.filter (-> not (it == null or it == '') )
+
 read-stdin-as-lines-then = (func) ->
   buf = ''
   process.stdin.set-encoding \utf-8
@@ -155,6 +135,7 @@ read-stdin-as-lines-then = (func) ->
   process.stdin.on \end, -> func (buf.split "\n" |> no-empty)
 
 launch-editor = (file, after) ->
+  spawn = require(\child_process).spawn
   # from here:
   # https://gist.github.com/Floby/927052
   cp = spawn process.env.EDITOR, [file], {
@@ -163,18 +144,65 @@ launch-editor = (file, after) ->
 
   after?!
 
+dump-tsv = ->
+  # dump a simple tsv file with fields (id, tags, title)
+  entries = get-all-entries!
+  out = []
+  for entry in entries
+    out.push [entry.id, entry.title, (entry.tags.join ',')].join '\t'
+  return out.join "\n"
+
 # HTML / site stuff
+
+html-init = ->
+  # the requires for this are slow, so no point in adding them on the cli
+  eep := require \./equaeverpoise
+  Section := eep.Section
+  domino := require \domino
+  RSS := require \rss
+  ls := require \livescript
+
+begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
+
+read-entry-body = ->
+  expanded = ''
+  for line in it.split "\n"
+    if begins-with \], line
+        line = eval-ls line.substr 1
+    else if begins-with \!, line
+      line = line.slice 1 # discard exclamation
+      words = line.split ' '
+      command = words.shift!
+      switch command
+      | \img =>
+        img-tag = "<img src=\"#{words.shift!}\"/>"
+        caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
+        line = "<div class=\"img\">" + img-tag + caption + "</div>"
+      | \video =>
+        vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
+        caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
+        line = "<div class=\"img\">" + vid-tag + caption + "</div>"
+      | \archive => line = build-list-page!join("\n")
+      | \.rule =>
+          # use the markdown thing and replace the default <p> tag
+          line = '<p class="rule">' + markdown(words.join ' ').substr 3
+      | otherwise => \noop # unknown word, maybe throw error?
+    expanded += line + "\n"
+  expanded = deltos-link-to-html expanded
+  return markdown expanded
+
+get-template = memoize ->
+  fs.read-file-sync (deltos-home + \single.html), \utf-8 |> -> domino.create-window(it).document
 
 # TODO avoid reading file every time
 build-page = (eep, content) ->
   if content.raw-body
     content.body = read-entry-body content.raw-body
     delete content.raw-body
-  template = fs.read-file-sync (deltos-home + \single.html), \utf-8 |> jsdom
-  eep.push template.body, content
-  if content.title
-      template.title = content.title
-  return template.children.0.outerHTML
+  template = get-template!
+  eep.push template.body, content, template.body
+  if content.title then template.title = content.title
+  return template.outerHTML
 
 entry-rules = ->
   page = new Section!
@@ -217,8 +245,6 @@ render-multiple = (ids) ->
 
   build-page page, {entries: entries}
 
-render-log = -> read-stdin-as-lines-then render-multiple
-
 to-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
   "- [#{it.title}](/by-id/#{it.id}.html) <span class=\"tags\">#{tags}</span>"
@@ -237,7 +263,36 @@ build-list-page = ->
     reverse |>
     map to-markdown-link
 
+#TODO - what if only some have order? Maybe not worth worrying about.
+sort-order-then-date = (a, b) ->
+  if a?.order and b?.order
+    # for ordering, lower ranks higher
+    if a.order < b.order then return 1 else return -1
+
+  # compare by date - assume dates always differ
+  if a.date > b.date then return -1 else return 1
+
+# parent is an id, depth is depth remaining (so 0==done)
+build-hierarchical-list = (entries, depth, parent=null) ->
+  if depth == 0 then return ''# we're done
+  if parent # we're only interested in children right now
+    children = entries.filter -> it.parents and is-in it.parents, parent
+  else # otherwise we want only top-level items
+    children = entries.filter -> not it.parents
+
+  children = sort-with sort-order-then-date, children
+
+  out = ''
+  spacer = if parent then '  ' else '' # list indentation
+  for child in children
+    out += spacer + (to-markdown-link child) + "\n"
+    if depth > 0
+      out +=  build-hierarchical-list(entries, depth - 1, child.id)
+                .split("\n").map(-> spacer + it).join '\n'
+  return out
+
 build-site = ->
+  html-init!
   config = read-config!
   published = config.site.tag
   site-root = deltos-home + \site/
@@ -252,10 +307,6 @@ build-site = ->
     page = render entry.id
     fname = site-root + "/by-id/" + entry.id + ".html"
     fs.write-file-sync fname, page
-
-  # update log
-  log = take 5, entries |> map (.id) |> render-multiple
-  fs.write-file-sync (site-root + "log.html"), log
 
   rss = new RSS {
     title: config.site.title
@@ -273,14 +324,12 @@ build-site = ->
     entry.guid = entry.link
     rss.item entry
 
+
   fs.write-file-sync (site-root + "index.rss"), rss.xml!
   process.exit 0
 
-recent-first = (entries) ->
-  sort-by (.date), entries
-
 all-to-json = ->
-  entries = get-all-entries! |> recent-first |> reverse
+  entries = get-all-entries! |> sort-by (.date) |> reverse
   for entry in entries
     entry.tags = entry.tags.map String # numeric tags should still be strings
     console.log JSON.stringify entry
@@ -304,6 +353,9 @@ add-command "render [id]", "Render [id] as HTML", ->
   console.log render process.argv.3
 add-command \build-site, "Build static HTML", build-site
 add-command \json, "Dump all entries to JSON", all-to-json
+add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
+add-command \list-test, "Show hierarchical list", ->
+  console.log build-hierarchical-list get-all-entries!, 3
 add-command \help, "Show this help", ->
   console.log "usage: deltos <command> [options...]\n"
   for name,func of commands
@@ -312,7 +364,9 @@ add-command \help, "Show this help", ->
   process.exit 1
 
 try
-  commands[process.argv.2]!
+  func = commands[process.argv.2]
 catch # bad command, print help
-  commands.help!
+  func = commands.help!
+
+func!
 
