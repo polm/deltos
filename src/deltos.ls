@@ -111,7 +111,7 @@ new-note = (title="") ->
   # check it doesn't exist; if it does, make another
   while true
     id = uuid.v4!
-    fname = get-filename \id
+    fname = get-filename id
     if not fs.exists-sync fname
       break
   # dump the template into it (date, tags, title, ---)
@@ -345,7 +345,7 @@ add-command = (name, desc, func) ->
 
 add-command "init", "Set up DELTOS_HOME", init
 add-command "post [title...]", "Start a new post in $EDITOR", ->
-  write-post process.argv.slice(2).join ' '
+  write-post process.argv.slice(3).join ' '
 add-command "edit [id]", "Edit an existing post", ->
   edit-post get-filename process.argv.3
 add-command "render [id]", "Render [id] as HTML", ->
