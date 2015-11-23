@@ -111,6 +111,9 @@ new-note = (title="") ->
   # check it doesn't exist; if it does, make another
   while true
     id = uuid.v4!
+    # don't need the whole thing; this'll do for now
+    # smallest bits are most random, so let's use those
+    id = id.split('').reverse![0 til 8].join ''
     fname = get-filename id
     if not fs.exists-sync fname
       break
