@@ -358,6 +358,9 @@ add-command \json, "Dump all entries to JSON", all-to-json
 add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
 add-command \list-test, "Show hierarchical list", ->
   console.log build-hierarchical-list get-all-entries!, 3
+add-command \version, "Show version number", ->
+  pkg = require \../package.json
+  console.log pkg.version
 add-command \help, "Show this help", ->
   console.log "usage: deltos <command> [options...]\n"
   for name,func of commands
