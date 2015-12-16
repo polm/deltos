@@ -32,7 +32,11 @@ init = -> # create the empty directories needed
   fs.mkdir-sync BASEDIR
 
 read-config = memoize ->
-  yaml.safe-load fs.read-file-sync (deltos-home + \config), \utf-8
+  try
+    yaml.safe-load fs.read-file-sync (deltos-home + \config), \utf-8
+  catch e
+    console.error "Error reading config:" + e.message
+    process.exit 1
 
 write-post = -> launch-editor new-note it
 edit-post = -> launch-editor it
@@ -47,7 +51,12 @@ normalize-date = ->
 read-entry = ->
   # raw entry as string as input
   [header, body] = it.split "\n---\n"
-  metadata = yaml.safe-load header
+  try
+    metadata = yaml.safe-load header
+  catch e
+    console.error "Error parsing YAML header:\n" + header
+    console.error "Error message:" + e.message
+    process.exit 1
 
   normalize-date metadata
   if not metadata.title
