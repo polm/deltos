@@ -39,6 +39,7 @@ read-config = memoize ->
     process.exit 1
 
 write-post = -> launch-editor new-note it
+write-daily = -> launch-editor new-daily!
 edit-post = -> launch-editor it
 
 normalize-date = ->
@@ -65,13 +66,22 @@ read-entry = ->
       metadata.tags = ['untagged']
   if metadata.location
     metadata.location = "Click <a href=\"http://maps.google.com/?q=#{metadata.location}\">here</a> for a map to this location."
-  if metadata.series
-    series = read-entry-from-file get-filename metadata.series
-    metadata.series = "This post is part of series on <a href=\"/by-id/#{series.id}.html\">#{series.title}</a>."
   if metadata.parent # you can set just one parent if you want
     if not metadata.parents then metadata.parents = []
     metadata.parents.push metadata.parent
     delete metadata.parent
+  if metadata.parents # add some nice text
+    if metadata.parents.length == 1
+      collection = read-entry-from-file get-filename metadata.parents.0
+      metadata.collections = "This post is part of a collection on <a href=\"/by-id/#{collection.id}.html\">#{collection.title}</a>."
+    else
+      metadata.collections = "This post is part of collections on "
+      colls = []
+      for coll in metadata.parents
+        collection = read-entry-from-file get-filename coll
+        colls.push "<a href=\"/by-id/#{collection.id}.html\">#{collection.title}</a>"
+      colls[*-1] = "and " + colls[*-1] + "."
+      metadata.collections += colls.join ", "
 
   metadata.raw-body = body
   return metadata
@@ -96,11 +106,12 @@ get-all-entries = memoize ->
 
   return values entries |> sort-by (.date) |> reverse
 
-local-iso-time = ->
+local-iso-time = (vsnow=0) ->
   # from here: http://stackoverflow.com/questions/10830357/javascript-toisostring-ignores-timezone-offset
   # Idea is to take a date, add our offset, get that as Z/UTC time, then just change the tz note
   offset = (new Date!).get-timezone-offset!
   offset-ms = offset * 60000
+  offset-ms += vsnow
   local-time = (new Date(Date.now! - offset-ms)).toISOString!slice 0, -1
   offset-hours = offset / 60
   offset-double-oh-hours = ~~(offset-hours) * 100
@@ -115,7 +126,7 @@ local-iso-time = ->
   offset-string = offset-string.slice (offset-string.length - 4)
   return local-time + offset-prefix + offset-string
 
-new-note = (title="") ->
+get-new-id = ->
   # get a new uuid
   # check it doesn't exist; if it does, make another
   while true
@@ -125,16 +136,36 @@ new-note = (title="") ->
     id = id.split('').reverse![0 til 8].join ''
     fname = get-filename id
     if not fs.exists-sync fname
-      break
+      return id
+
+
+new-note = (title="",tags=[]) ->
+  id = get-new-id!
+  fname = get-filename id
   # dump the template into it (date, tags, title, ---)
   now = local-iso-time!
   buf = ["id: #id",
          "date: #now",
          "title: #title",
-         "tags: []",
+         "tags: [#{tags.join ", "}]",
          "---\n"].join "\n"
   fs.write-file-sync fname, buf
   # finally print the name so it can be used
+  return fname
+
+new-daily = ->
+  # make a daily note, filling with todos etc.
+  today = local-iso-time!.substr 0, 10
+  # don't create two dailys for today
+  entries = get-all-entries!filter -> tagged(\daily, it) and today == it.date.substr 0, 10
+  if entries.length > 0
+    return get-filename entries.0.id
+  fname = new-note "Daily Notes - #today", [\daily]
+  fs.append-file-sync fname, "deltos todos\n"
+  #TODO maybe limit based on count or time?
+  fs.append-file-sync fname, dump-todos!
+  #TODO fortunes?
+  fs.append-file-sync fname, "\n\n"
   return fname
 
 no-empty = -> it.filter (-> not (it == null or it == '') )
@@ -154,6 +185,10 @@ launch-editor = (file, after) ->
   }
 
   after?!
+
+dump-todos = ->
+  entries = get-all-entries! |> filter (-> it.todo and not it.done) |> sort-by (.todo)
+  return entries.map(-> "- .(#{it.title}//#{it.id}) #{it.todo}").join "\n"
 
 dump-tsv = ->
   # dump a simple tsv file with fields (id, tags, title)
@@ -177,6 +212,7 @@ begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 
 read-entry-body = ->
   expanded = ''
+  if not it then return '' # it's ok to empty
   for line in it.split "\n"
     if begins-with \], line
         line = eval-ls line.substr 1
@@ -205,6 +241,9 @@ read-entry-body = ->
 get-template = memoize ->
   fs.read-file-sync (deltos-home + \single.html), \utf-8 |> -> domino.create-window(it).document
 
+searchable-text = ->
+  domino.create-window(it).document.body.text-content.to-lower-case!
+
 # TODO avoid reading file every time
 build-page = (eep, content) ->
   if content.raw-body
@@ -220,7 +259,7 @@ entry-rules = ->
   page.rule \h1, \title
   page.rule \h4, \subtitle
   page.rule \.location, \location
-  page.rule \.series, \series
+  page.rule \.collections, \collections
   page.rule \.date, \date
   page.rule \.content, \body
   link-pusher = (el, link) -> el.href = link
@@ -302,14 +341,21 @@ build-hierarchical-list = (entries, depth, parent=null) ->
                 .split("\n").map(-> spacer + it).join '\n'
   return out
 
-build-site = ->
+build-private-reference = ->
+  build-site true
+
+build-site = (priv=false)->
   html-init!
   config = read-config!
   published = config.site.tag
   site-root = deltos-home + \site/
+  if priv then site-root = deltos-home + \private/
 
-  entries = get-rendered-entries! |>
-    filter (tagged published) |>
+
+  entries = get-rendered-entries!
+  if not priv
+    entries = entries |> filter (tagged published)
+  entries = entries |>
     sort-by (.date) |>
     reverse
 
@@ -337,12 +383,13 @@ build-site = ->
 
 
   fs.write-file-sync (site-root + "index.rss"), rss.xml!
-  process.exit 0
 
 all-to-json = ->
-  entries = get-all-entries! |> sort-by (.date) |> reverse
+  html-init!
+  entries = get-rendered-entries! |> sort-by (.date) |> reverse
   for entry in entries
     entry.tags = entry.tags.map String # numeric tags should still be strings
+    entry.body = searchable-text entry.body
     console.log JSON.stringify entry
 
 # Command line handling from here on
@@ -356,17 +403,22 @@ add-command = (name, desc, func) ->
   commands[name] = func
 
 add-command "init", "Set up DELTOS_HOME", init
+add-command "new [title...]", "Create a note and print the filename", ->
+  console.log new-note process.argv.slice(3).join ' '
+add-command "daily", "Create a daily note and open in $EDITOR", ->
+  write-daily!
 add-command "post [title...]", "Start a new post in $EDITOR", ->
   write-post process.argv.slice(3).join ' '
 add-command "edit [id]", "Edit an existing post", ->
   edit-post get-filename process.argv.3
 add-command "render [id]", "Render [id] as HTML", ->
   console.log render process.argv.3
-add-command \build-site, "Build static HTML", build-site
+add-command \build-site, "Build static HTML", ->
+  build-site!
+  build-private-reference!
 add-command \json, "Dump all entries to JSON", all-to-json
+add-command \todos,  "Dump todo list", -> console.log dump-todos!
 add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
-add-command \list-test, "Show hierarchical list", ->
-  console.log build-hierarchical-list get-all-entries!, 3
 add-command \version, "Show version number", ->
   pkg = require \../package.json
   console.log pkg.version
@@ -381,6 +433,9 @@ try
   func = commands[process.argv.2]
 catch # bad command, print help
   func = commands.help!
+
+if not func
+  func = commands.help
 
 func!
 
