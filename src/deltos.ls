@@ -1,5 +1,7 @@
 fs = require \fs
-yaml = require \js-yaml
+Yaml = require \js-yaml
+yaml = ->
+  Yaml.safe-load it, schema: Yaml.FAILSAFE_SCHEMA
 markdown = require \marked
 {Obj, filter, keys, values, group-by, concat, unique, map, take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
 uuid = require \node-uuid
@@ -33,7 +35,7 @@ init = -> # create the empty directories needed
 
 read-config = memoize ->
   try
-    yaml.safe-load fs.read-file-sync (deltos-home + \config), \utf-8
+    yaml fs.read-file-sync (deltos-home + \config), \utf-8
   catch e
     console.error "Error reading config:" + e.message
     process.exit 1
@@ -53,7 +55,7 @@ read-entry = ->
   # raw entry as string as input
   [header, body] = it.split "\n---\n"
   try
-    metadata = yaml.safe-load header
+    metadata = yaml header
   catch e
     console.error "Error parsing YAML header:\n" + header
     console.error "Error message:" + e.message
@@ -351,7 +353,6 @@ build-site = (priv=false)->
   site-root = deltos-home + \site/
   if priv then site-root = deltos-home + \private/
 
-
   entries = get-rendered-entries!
   if not priv
     entries = entries |> filter (tagged published)
@@ -380,7 +381,6 @@ build-site = (priv=false)->
     entry.url = entry.link
     entry.guid = entry.link
     rss.item entry
-
 
   fs.write-file-sync (site-root + "index.rss"), rss.xml!
 
