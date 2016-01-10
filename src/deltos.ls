@@ -375,6 +375,9 @@ build-site = (priv=false)->
     pubDate: new Date!
   }
 
+  for tag in config.site["exclude-tags"]
+    entries = entries.filter (-> not tagged tag, it)
+
   for entry in entries
     entry.description = entry.body
     entry.categories = entry.tags
