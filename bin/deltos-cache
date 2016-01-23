@@ -1,3 +1,4 @@
 #!/bin/bash
 # cache deltos json for quick search
+# put this in cron to keep it current
 deltos json > ~/.deltos.cache.json
