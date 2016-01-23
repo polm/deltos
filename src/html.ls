@@ -21,6 +21,9 @@ export render = ->
   it.link = '/by-id/' + it.id + \.html
   build-page entry-rules!, it
 
+export build-private-reference = ->
+  build-site true
+
 export build-site = (priv=false)->
   html-init!
   config = read-config!

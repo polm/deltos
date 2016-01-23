@@ -23,10 +23,7 @@ write-daily = -> launch-editor new-daily!
 write-post = -> launch-editor new-note it
 edit-post = -> launch-editor it
 
-{render, build-site, all-to-json} = require \./html
-
-build-private-reference = ->
-  build-site true
+{render, build-site, build-private-reference, all-to-json} = require \./html
 
 # INPUT
 # Handling command line arguments
@@ -50,8 +47,8 @@ add-command "edit [id]", "Edit an existing post", ->
 add-command "render [id]", "Render [id] as HTML", ->
   console.log render process.argv.3
 add-command \build-site, "Build static HTML", ->
-  build-site!
   build-private-reference!
+  build-site!
 add-command \json, "Dump all entries to JSON", all-to-json
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
 add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
