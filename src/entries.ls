@@ -1,16 +1,9 @@
-{memoize,normalize-date,local-iso-time} = require \./util
+{memoize, normalize-date, local-iso-time, yaml, \
+ deltos-home, BASEDIR, get-filename} = require \./util
 fs = require \fs
 uuid = require \node-uuid
-Yaml = require \js-yaml
-yaml = ->
-  Yaml.safe-load it, schema: Yaml.FAILSAFE_SCHEMA
 {Obj, filter, keys, values, group-by, concat, unique, map, \
   take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
-
-# Prepare widely-used environment settings
-deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
-BASEDIR = deltos-home + '/by-id/'
-get-filename = -> BASEDIR + it
 
 export new-note = (title="",tags=[]) ->
   id = get-new-id!
@@ -87,7 +80,7 @@ export get-all-entries = memoize ->
     entry = read-entry-from-file BASEDIR + ff
     entries[entry.id] = entry
 
-  # populate "children" - this is linear time
+  # populate "children" - this is not recursive
   for key, entry of entries
     if entry.parent then entry.parents = [entry.parent]
     if entry.parents

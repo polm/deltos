@@ -1,18 +1,12 @@
 fs = require \fs
 ls = require \livescript
-Yaml = require \js-yaml
-yaml = ->
-  Yaml.safe-load it, schema: Yaml.FAILSAFE_SCHEMA
 markdown = require \marked
-{memoize,is-in,tagged} = require \./util
+{memoize, is-in, tagged, yaml} = require \./util
 {get-all-entries} = require \./entries
 {Obj, filter, keys, values, group-by, concat, unique, map, \
   take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
 
-# Prepare widely-used environment settings
 deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
-BASEDIR = deltos-home + '/by-id/'
-get-filename = -> BASEDIR + it
 
 # placeholder globals; only required as needed
 ls = domino = RSS = eep = Section = {}
@@ -51,7 +45,6 @@ html-init = ->
   RSS := require \rss
   ls := require \livescript
 
-
 read-config = memoize ->
   try
     yaml fs.read-file-sync (deltos-home + \config), \utf-8
@@ -75,9 +68,7 @@ get-rendered-entries = ->
     entry.body = read-entry-body entry
   return entries
 
-
 begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
-
 
 # XXX note that eval'd code has full access to the calling context 
 # (which is to say the interior of this script)

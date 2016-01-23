@@ -5,12 +5,19 @@
 # - time-related code (local-iso-time, normalize-date)
 ##############################################
 
-ls = require \livescript
+# Prepare widely-used environment settings
+export deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
+export BASEDIR = deltos-home + '/by-id/'
+export get-filename = -> BASEDIR + it
 
-# XXX note that eval'd code has full access to the calling context 
-# (which is to say the interior of this script)
-export eval-ls = ->
-  eval ls.compile it, bare: true
+Yaml = require \js-yaml
+export yaml = ->
+  # The failsafe schema interperets all terminal values as strings
+  # We don't need support for numbers, and some "special" features
+  # can cause issues
+  # The bug this initially fixed was zero-initial short numeric 
+  # uuids like "06382" being interpreted as octal
+  Yaml.safe-load it, schema: Yaml.FAILSAFE_SCHEMA
 
 # simple memoizer for thunks
 export memoize = (func) ->
@@ -19,7 +26,6 @@ export memoize = (func) ->
     if output then return output
     output := func!
     return output
-
 
 export is-in = (list, item) --> -1 < list.index-of item
 

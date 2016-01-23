@@ -1,17 +1,12 @@
 {Obj, filter, keys, values, group-by, concat, unique, map, \
   take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
-{read-stdin-as-lines-then, launch-editor} = require \./util
+{read-stdin-as-lines-then, launch-editor, deltos-home, \
+  get-filename} = require \./util
 
-#TODO figure out a nicer way to set this than copying it everywhere...
-# Prepare widely-used environment settings
-deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
-BASEDIR = deltos-home + '/by-id/'
-get-filename = -> BASEDIR + it
-
-## COMMANDS
-# These are used (mostly) directly via the command line
+# Top-level commands - these are called more or less directly by the command line
+#
 init = ->
-  # create the empty directories needed
+  # create empty directories needed for before first run
   mkdirp = require \mkdirp
   mkdirp.sync deltos-home + \by-id
   mkdirp.sync deltos-home + \site
@@ -25,8 +20,8 @@ edit-post = -> launch-editor it
 
 {render, build-site, build-private-reference, all-to-json} = require \./html
 
-# INPUT
-# Handling command line arguments
+# Actually handling command line arguments
+
 commands = []
 
 add-command = (name, desc, func) ->
