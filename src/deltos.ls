@@ -92,6 +92,10 @@ read-entry-from-file = ->
   entry = fs.read-file-sync it, \utf-8
   read-entry entry
 
+get-child-entries = (parent) ->
+  out = get-all-entries!.filter(-> -1 != parent.children.index-of it.id)
+  return out
+
 # use this for filtering etc.
 get-all-entries = memoize ->
   entries = {}
@@ -100,7 +104,8 @@ get-all-entries = memoize ->
     entries[entry.id] = entry
 
   # populate "children" - this is linear time
-  for entry in entries
+  for key, entry of entries
+    if entry.parent then entry.parents = [entry.parent]
     if entry.parents
       for parent in entry.parents
         if not entries[parent].children then entries[parent].children = []
@@ -213,9 +218,10 @@ html-init = ->
 begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 
 read-entry-body = ->
+  raw = it.raw-body
   expanded = ''
-  if not it then return '' # it's ok to empty
-  for line in it.split "\n"
+  if not raw then return '' # it's ok to be empty
+  for line in raw.split "\n"
     if begins-with \], line
         line = eval-ls line.substr 1
     else if begins-with \!, line
@@ -231,7 +237,8 @@ read-entry-body = ->
         vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
         caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
         line = "<div class=\"img\">" + vid-tag + caption + "</div>"
-      | \archive => line = build-list-page!join("\n")
+      | \archive => line = build-list-page!.join "\n"
+      | \children => line = build-list-page(get-child-entries it).join "\n"
       | \.rule =>
           # use the markdown thing and replace the default <p> tag
           line = '<p class="rule">' + markdown(words.join ' ').substr 3
@@ -249,7 +256,7 @@ searchable-text = ->
 # TODO avoid reading file every time
 build-page = (eep, content) ->
   if content.raw-body
-    content.body = read-entry-body content.raw-body
+    content.body = read-entry-body content
     delete content.raw-body
   template = get-template!
   eep.push template.body, content, template.body
@@ -268,7 +275,6 @@ entry-rules = ->
   page.rule \.article-link, \link, {push: link-pusher}
   return page
 
-
 deltos-link-to-html = ->
   link-regex = /\.\(([^\/]*)\/\/([^\)]*)\)/g
   it.replace link-regex, (matched, label, dest) -> "<a href=\"/by-id/#{dest}.html\">#{label}</a>"
@@ -277,40 +283,27 @@ get-rendered-entries = ->
   # use this when you need the body with markdown etc.
   entries = get-all-entries!
   for entry in entries
-    entry.body = read-entry-body entry.raw-body
+    entry.body = read-entry-body entry
     delete entry.raw-body
   return entries
 
 render = ->
-  entry = read-entry-from-file get-filename it
-  entry.link = '/by-id/' + entry.id + \.html
-  build-page entry-rules!, entry
-
-render-multiple = (ids) ->
-  entries = ids.map -> read-entry-from-file get-filename it
-  entries.map (-> it.link = '/by-id/' + it.id + \.html; return it) # make sure they have a link
-  # load the body
-  entries.map (-> it.body = read-entry-body it.raw-body; delete it.raw-body)
-
-  page = new Section!
-  page.list-rule \#column, \entries, entry-rules!
-
-  build-page page, {entries: entries}
+  it.link = '/by-id/' + it.id + \.html
+  build-page entry-rules!, it
 
 to-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
   "- [#{it.title}](/by-id/#{it.id}.html) <span class=\"tags\">#{tags}</span>"
 
-build-list-page = ->
-  tags = [\published].concat process.argv.slice 3
-  entries = get-all-entries!
-  # remove meta-entries like Archive, top page
+build-list-page = (entries) ->
+  if not entries then entries = get-all-entries!
 
+  # remove meta-entries like Archive, top page
   config = read-config!
   for tag in config.site["exclude-tags"]
     entries = entries.filter (-> not tagged tag, it)
-  for tag in tags
-    entries = entries.filter (-> tagged tag, it)
+  entries = entries.filter (-> tagged \published, it)
+
   sort-by (.date), entries |>
     reverse |>
     map to-markdown-link
@@ -362,7 +355,7 @@ build-site = (priv=false)->
 
   # update individual posts
   for entry in entries
-    page = render entry.id
+    page = render entry
     fname = site-root + "/by-id/" + entry.id + ".html"
     fs.write-file-sync fname, page
 
