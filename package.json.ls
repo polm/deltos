@@ -22,6 +22,7 @@ dependencies:
   'prelude-ls': \^1.1.1
   domino: \^1.0.19
   rss: \^1.0.0
+  mkdirp: \^0.5.1
 
 dev-dependencies: {}
 

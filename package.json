@@ -18,7 +18,8 @@
     "node-uuid": "^1.4.1",
     "prelude-ls": "^1.1.1",
     "domino": "^1.0.19",
-    "rss": "^1.0.0"
+    "rss": "^1.0.0",
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {},
   "engines": {
