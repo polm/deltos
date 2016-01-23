@@ -4,9 +4,10 @@
 # jq: https://stedolan.github.io/jq/
 # percol: https://github.com/mooz/percol
 set -e 
+set -u
 set -o pipefail
 
-hit=$(cat ~/.deltos.cache.json | \
+hit=$(cat "$DELTOS_HOME/.deltos.cache.json" | \
   jq -r '[.title , (.tags | join(", ") ) , .id] | join(" | ")' | \
   percol | \
   cut -d"|" -f3)
