@@ -3,35 +3,99 @@ Yaml = require \js-yaml
 yaml = ->
   Yaml.safe-load it, schema: Yaml.FAILSAFE_SCHEMA
 markdown = require \marked
-{Obj, filter, keys, values, group-by, concat, unique, map, take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
+{Obj, filter, keys, values, group-by, concat, unique, map, \
+  take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
 uuid = require \node-uuid
+{memoize, is-in, no-empty, tagged, normalize-date, \
+   local-iso-time, read-stdin-as-lines-then, launch-editor} = require \./util
 
 # placeholder globals; only required as needed
 ls = domino = RSS = eep = Section = {}
-
-# simple memoizer for thunks
-memoize = (func) ->
-  output = null
-  return ->
-    if output then return output
-    output := func!
-    return output
-
-deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
-BASEDIR = deltos-home + '/by-id/'
-get-filename = -> BASEDIR + it
 
 # XXX note that eval'd code has full access to the calling context 
 # (which is to say the interior of this script)
 eval-ls = ->
   eval ls.compile it, bare: true
 
-is-in = (list, item) --> -1 < list.index-of item
-tagged = (tag, entry) --> (not tag) or is-in entry.tags, tag # On a null tag, this is always true
+# Prepare widely-used environment settings
+deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
+BASEDIR = deltos-home + '/by-id/'
+get-filename = -> BASEDIR + it
 
-init = -> # create the empty directories needed
-  fs.mkdir-sync deltos-home
-  fs.mkdir-sync BASEDIR
+# TODO - split into area-appropriate files
+# Broad areas:
+# - functional helpers
+# - entry handling
+# - command handling
+# - html rendering
+
+## COMMANDS
+# These are used (mostly) directly via the command line
+
+init = ->
+  # create the empty directories needed
+  mkdirp = require \mkdirp
+  mkdirp.sync deltos-home + \by-id
+  mkdirp.sync deltos-home + \site
+  mkdirp.sync deltos-home + \private
+
+new-note = (title="",tags=[]) ->
+  id = get-new-id!
+  fname = get-filename id
+  # dump the template into it (date, tags, title, ---)
+  now = local-iso-time!
+  buf = ["id: #id",
+         "date: #now",
+         "title: #title",
+         "tags: [#{tags.join ", "}]",
+         "---\n"].join "\n"
+  fs.write-file-sync fname, buf
+  # finally print the name so it can be used
+  return fname
+
+write-daily = -> launch-editor new-daily!
+write-post = -> launch-editor new-note it
+edit-post = -> launch-editor it
+
+render = ->
+  it.link = '/by-id/' + it.id + \.html
+  build-page entry-rules!, it
+
+build-private-reference = ->
+  build-site true
+
+build-site = (priv=false)->
+  html-init!
+  config = read-config!
+  published = config.site.tag
+  site-root = deltos-home + \site/
+  if priv then site-root = deltos-home + \private/
+
+  entries = get-entries-to-build published, priv
+  build-site-html site-root, entries
+  build-rss site-root, config, entries
+
+all-to-json = ->
+  html-init!
+  entries = get-rendered-entries! |> sort-by (.date) |> reverse
+  for entry in entries
+    entry.tags = entry.tags.map String # numeric tags should still be strings
+    entry.body = searchable-text entry.body
+    console.log JSON.stringify entry
+
+dump-todos = ->
+  entries = get-all-entries! |> filter (-> it.todo and not it.done) |> sort-by (.todo)
+  return entries.map(-> "- .(#{it.title}//#{it.id}) #{it.todo}").join "\n"
+
+dump-tsv = ->
+  # dump a simple tsv file with fields (id, tags, title)
+  entries = get-all-entries!
+  out = []
+  for entry in entries
+    out.push [entry.id, entry.title, (entry.tags.join ',')].join '\t'
+  return out.join "\n"
+
+#####
 
 read-config = memoize ->
   try
@@ -40,19 +104,9 @@ read-config = memoize ->
     console.error "Error reading config:" + e.message
     process.exit 1
 
-write-post = -> launch-editor new-note it
-write-daily = -> launch-editor new-daily!
-edit-post = -> launch-editor it
-
-normalize-date = ->
-  # This needs to be done to handle some date stupidity
-  # YAML can save dates natively, but only recognizes a subset of ISO8601
-  # Specifically, 4-character timezones must have a colon (09:00, not 0900)
-  # This is stupid.
-  it.date = (new Date it.date).toISOString!
 
 read-entry = ->
-  # raw entry as string as input
+  # "it" is raw entry as string as input
   [header, body] = it.split "\n---\n"
   try
     metadata = yaml header
@@ -113,26 +167,6 @@ get-all-entries = memoize ->
 
   return values entries |> sort-by (.date) |> reverse
 
-local-iso-time = (vsnow=0) ->
-  # from here: http://stackoverflow.com/questions/10830357/javascript-toisostring-ignores-timezone-offset
-  # Idea is to take a date, add our offset, get that as Z/UTC time, then just change the tz note
-  offset = (new Date!).get-timezone-offset!
-  offset-ms = offset * 60000
-  offset-ms += vsnow
-  local-time = (new Date(Date.now! - offset-ms)).toISOString!slice 0, -1
-  offset-hours = offset / 60
-  offset-double-oh-hours = ~~(offset-hours) * 100
-  if offset-hours % 1 != 0 # half-hour offset
-    offset-double-oh-hours += 50
-  # remember this is the time from UTC to us, not us to UTC
-  offset-prefix = \-
-  if offset-double-oh-hours < 0
-    offset-prefix = \+
-    offset-double-oh-hours *= -1
-  offset-string = '000000' + offset-double-oh-hours
-  offset-string = offset-string.slice (offset-string.length - 4)
-  return local-time + offset-prefix + offset-string
-
 get-new-id = ->
   # get a new uuid
   # check it doesn't exist; if it does, make another
@@ -144,21 +178,6 @@ get-new-id = ->
     fname = get-filename id
     if not fs.exists-sync fname
       return id
-
-
-new-note = (title="",tags=[]) ->
-  id = get-new-id!
-  fname = get-filename id
-  # dump the template into it (date, tags, title, ---)
-  now = local-iso-time!
-  buf = ["id: #id",
-         "date: #now",
-         "title: #title",
-         "tags: [#{tags.join ", "}]",
-         "---\n"].join "\n"
-  fs.write-file-sync fname, buf
-  # finally print the name so it can be used
-  return fname
 
 new-daily = ->
   # make a daily note, filling with todos etc.
@@ -175,35 +194,6 @@ new-daily = ->
   fs.append-file-sync fname, "\n\n"
   return fname
 
-no-empty = -> it.filter (-> not (it == null or it == '') )
-
-read-stdin-as-lines-then = (func) ->
-  buf = ''
-  process.stdin.set-encoding \utf-8
-  process.stdin.on \data, -> buf += it
-  process.stdin.on \end, -> func (buf.split "\n" |> no-empty)
-
-launch-editor = (file, after) ->
-  spawn = require(\child_process).spawn
-  # from here:
-  # https://gist.github.com/Floby/927052
-  cp = spawn process.env.EDITOR, [file], {
-    stdio: \inherit
-  }
-
-  after?!
-
-dump-todos = ->
-  entries = get-all-entries! |> filter (-> it.todo and not it.done) |> sort-by (.todo)
-  return entries.map(-> "- .(#{it.title}//#{it.id}) #{it.todo}").join "\n"
-
-dump-tsv = ->
-  # dump a simple tsv file with fields (id, tags, title)
-  entries = get-all-entries!
-  out = []
-  for entry in entries
-    out.push [entry.id, entry.title, (entry.tags.join ',')].join '\t'
-  return out.join "\n"
 
 # HTML / site stuff
 
@@ -287,10 +277,6 @@ get-rendered-entries = ->
     delete entry.raw-body
   return entries
 
-render = ->
-  it.link = '/by-id/' + it.id + \.html
-  build-page entry-rules!, it
-
 to-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
   "- [#{it.title}](/by-id/#{it.id}.html) <span class=\"tags\">#{tags}</span>"
@@ -336,29 +322,24 @@ build-hierarchical-list = (entries, depth, parent=null) ->
                 .split("\n").map(-> spacer + it).join '\n'
   return out
 
-build-private-reference = ->
-  build-site true
-
-build-site = (priv=false)->
-  html-init!
-  config = read-config!
-  published = config.site.tag
-  site-root = deltos-home + \site/
-  if priv then site-root = deltos-home + \private/
-
+get-entries-to-build = (published, priv) ->
+  # If this is a public html version, only show entries tagged for publication
+  # If private, use everything
   entries = get-rendered-entries!
   if not priv
     entries = entries |> filter (tagged published)
-  entries = entries |>
+  return entries |>
     sort-by (.date) |>
     reverse
 
-  # update individual posts
+build-site-html = (root, entries) ->
+  # update individual post html
   for entry in entries
     page = render entry
-    fname = site-root + "/by-id/" + entry.id + ".html"
+    fname = root + "/by-id/" + entry.id + ".html"
     fs.write-file-sync fname, page
 
+build-rss = (root, config, entries) ->
   rss = new RSS {
     title: config.site.title
     description: config.site.description
@@ -378,18 +359,11 @@ build-site = (priv=false)->
     entry.guid = entry.link
     rss.item entry
 
-  fs.write-file-sync (site-root + "index.rss"), rss.xml!
+  fs.write-file-sync (root + "index.rss"), rss.xml!
 
-all-to-json = ->
-  html-init!
-  entries = get-rendered-entries! |> sort-by (.date) |> reverse
-  for entry in entries
-    entry.tags = entry.tags.map String # numeric tags should still be strings
-    entry.body = searchable-text entry.body
-    console.log JSON.stringify entry
 
-# Command line handling from here on
-
+# INPUT
+# Handling command line arguments
 commands = []
 
 add-command = (name, desc, func) ->
