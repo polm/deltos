@@ -60,13 +60,21 @@ read-config = memoize ->
     process.exit 1
 
 build-page = (eep, content) ->
+  # This builds a whole page with <head> etc.
   if content.raw-body
     content.body = read-entry-body content
-    delete content.raw-body
   template = get-template!
   eep.push template.body, content, template.body
   if content.title then template.title = content.title
   return template.outerHTML
+
+get-rendered-entries = ->
+  # This just builds a body
+  entries = get-all-entries!
+  for entry in entries
+    entry.body = read-entry-body entry
+  return entries
+
 
 begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 
@@ -117,14 +125,6 @@ get-template = memoize ->
 
 searchable-text = ->
   domino.create-window(it).document.body.text-content.to-lower-case!
-
-get-rendered-entries = ->
-  # use this when you need the body with markdown etc.
-  entries = get-all-entries!
-  for entry in entries
-    entry.body = read-entry-body entry
-    delete entry.raw-body
-  return entries
 
 entry-rules = ->
   # These are Equaeverpoise rules
