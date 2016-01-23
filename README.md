@@ -11,11 +11,14 @@ Deltos is a tool for managing personal information.
 
 # Getting started
 
+Install with npm.
+
+    npm install -g deltos
+
 Make sure `bin/deltos` is in your path. 
 
     deltos init
-    deltos post
-    cp templates/single.html ~/.deltos/ # this is an example for HTML output
+    deltos post My First Post
 
 Write a post. The header is just YAML, so feel free to add fields. Write a
 little note and put some tags in the `tags` field, comma separated. Then close
@@ -26,9 +29,16 @@ If you want to search using the included tools you'll need
 [percol](https://github.com/mooz/percol). Once those are installed you can
 search just by running: 
 
-    deltos cache && dsearch
+    deltos-cache && dsearch
 
 Just type to filter entries displayed, and select one from the list to edit it.
+To make sure the cache is regenerated regularly add an entry to your crontab,
+remembering to set the environment variable. On most crons you can put in an
+entry like this (assuming `deltos-cache` is in your `PATH`): 
+
+*/10 * * * * DELTOS_HOME=$HOME/.deltos/ deltos-cache
+
+If you use vim you'll want to check [deltos.vim](http://github.com/polm/deltos.vim). 
 
 # What Deltos Is
 
@@ -39,7 +49,7 @@ I want to be able to use my own text editor.  Even if a wiki uses flat files
 there are still issues.
 
 - Unicode support is typically mediocre
-- Thinking up titles is hard
+- Thinking up titles is tedious
 - Links break and chaos is unleashed when titles change
 
 There are downsides to using uuid keys, but I realized I don't really care
@@ -64,6 +74,11 @@ various metadata fields, to link notes together, and to use outlines to
 organize notes in hierarchies when tags don't cut it. You should also be able
 to edit an article, including its metadata, without breaking links or
 disrupting the integrity of your web. 
+
+## TODO
+
+- explain html generation
+- explain searchable private html reference
 
 ## License
 
