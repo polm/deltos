@@ -1,0 +1,172 @@
+@charset "UTF-8";
+@import url(https://fonts.googleapis.com/css?family=Sorts+Mill+Goudy);
+@import url(https://fonts.googleapis.com/css?family=EB+Garamond:400);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  text-rendering: optimizelegibility; }
+
+@media screen and (max-width: 1000px) {
+  body, article, #column, #footer, #footer p {
+    width: 100% !important; }
+
+  #column, #footer {
+    word-wrap: break-word !important;
+    padding: 1em 1em !important; }
+    #column p, #column li, #footer p, #footer li {
+      font-size: 24px !important;
+      line-height: 30px !important; }
+    #column blockquote, #column pre, #footer blockquote, #footer pre {
+      margin: 0 !important;
+      padding: 0.75em !important; }
+    #column ul, #column ol, #footer ul, #footer ol {
+      margin: 1em 0.5em !important; }
+    #column img, #footer img {
+      max-width: 100%; }
+    #column .caption, #footer .caption {
+      border-left: none !important; }
+
+  h1, h2, h3, h4, h5 {
+    margin-left: 0 !important; }
+
+  h1 {
+    font-size: 2em !important; }
+
+  #header, #header img {
+    height: 50px !important; } }
+/*
+$fgcolor: white; 
+$bgcolor: black;
+$shaded: #ddd;
+*/
+html, body {
+  height: 100%;
+  background: #41221E; }
+
+a {
+  color: black; }
+
+a:visited {
+  color: #666; }
+
+/* This looks cool but is harder to follow than ordinary lines
+p a:after { content: "°"; }
+p a[href*="//"]:not([href*="dampfkraft.com"]):after {
+  content: "† ";
+}
+*/
+a.article-link {
+  text-decoration: none;
+  color: #41221E; }
+  a.article-link:visited {
+    color: #41221E; }
+
+#header {
+  width: 100%;
+  height: 100px;
+  background: url(floralwalls.jpg);
+  border-bottom: 10px solid #41221E; }
+  #header img {
+    background: white;
+    margin-left: 23px; }
+
+article {
+  width: 550px;
+  margin-bottom: 4em; }
+
+#column .img .caption {
+  background: #D3E4DF;
+  margin-top: -5px;
+  /* not sure why this is necessary */
+  padding: 0 0.5em;
+  border: 2px solid #41221E;
+  border-top: none;
+  border-right: none; }
+
+#footer {
+  background: #41221E;
+  color: #D3E4DF; }
+  #footer p {
+    width: 550px; }
+  #footer a {
+    color: #D3E4DF; }
+  #footer a:visited {
+    color: #D3E4DF; }
+
+#column {
+  border-top: 10px solid #D3E4DF;
+  border-bottom: 10px solid #D3E4DF;
+  background: white; }
+  #column blockquote, #column pre {
+    background: #D3E4DF;
+    margin: 0;
+    padding: 0.75em;
+    border-top: 2px solid #41221E; }
+    #column blockquote p, #column pre p {
+      margin: 0; }
+
+#column, #footer {
+  margin-right: 0;
+  padding: 1em 5em;
+  font-family: "EB Garamond", Georgia, serif; }
+  #column .location, #column .series, #footer .location, #footer .series {
+    margin: 0.5em 0 -1em 0;
+    color: #41221E;
+    font-style: italic;
+    font-size: 100%; }
+  #column p, #column li, #footer p, #footer li {
+    font-size: 1.3em;
+    line-height: 30px; }
+  #column p, #footer p {
+    margin: 1em 0; }
+  #column li, #footer li {
+    margin: 0 1em; }
+  #column ul, #column ol, #footer ul, #footer ol {
+    margin: 1em  2em; }
+  #column ul, #footer ul {
+    list-style-type: square; }
+  #column h1, #column h2, #column h3, #column h4, #column h5, #footer h1, #footer h2, #footer h3, #footer h4, #footer h5 {
+    font-family: "Sorts Mill Goudy",serif;
+    font-weight: normal;
+    margin-left: -20px;
+    margin-bottom: -0.25em;
+    color: #41221E; }
+  #column h1, #footer h1 {
+    font-size: 3em; }
+  #column h2, #footer h2 {
+    font-size: 2em; }
+  #column h4, #footer h4 {
+    font-weight: normal;
+    font-style: italic;
+    font-size: 1.5em; }
+  #column code, #footer code {
+    font-family: profontwindowsregular, Courier New, monospace; }
+  #column li code, #column p code, #footer li code, #footer p code {
+    background: #D3E4DF;
+    padding: 1px 5px; }
+  #column .date, #footer .date {
+    font-style: italic; }
+  #column .tags, #footer .tags {
+    color: #666;
+    font-size: 0.8em;
+    font-style: italic; }
+  #column img, #column iframe, #footer img, #footer iframe {
+    max-width: 100%; }
+  #column input.deltos-search, #footer input.deltos-search {
+    width: 100%;
+    height: 1.5em;
+    font-size: 1.5em; }
+  #column .deltos-results, #footer .deltos-results {
+    max-height: 12em;
+    overflow: hidden; }
+    #column .deltos-results div, #footer .deltos-results div {
+      max-height: 3em;
+      overflow: hidden; }
+
+@font-face {
+  font-family: 'profontwindowsregular';
+  src: url("profontwindows-webfont.eot");
+  src: url("profontwindows-webfont.eot?#iefix") format("embedded-opentype"), url("profontwindows-webfont.woff2") format("woff2"), url("profontwindows-webfont.woff") format("woff"), url("profontwindows-webfont.ttf") format("truetype"), url("profontwindows-webfont.svg#profontwindowsregular") format("svg");
+  font-weight: normal;
+  font-style: normal; }

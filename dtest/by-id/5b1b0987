@@ -1,0 +1,15 @@
+id: 5b1b0987
+date: 2016-01-23T17:04:36.338+0900
+title: Deltos Test Pages
+tags: [published, excluded]
+---
+
+Welcome to the Deltos Test Pages. 
+
+Recent posts ([RSS](/index.rss)):
+
+]build-list-page!slice(0, 5).join "\n"
+
+You can see all posts ordered by date at the .(Archive//762b0e3f). 
+
+
