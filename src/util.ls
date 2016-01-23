@@ -7,6 +7,11 @@
 
 ls = require \livescript
 
+# XXX note that eval'd code has full access to the calling context 
+# (which is to say the interior of this script)
+export eval-ls = ->
+  eval ls.compile it, bare: true
+
 # simple memoizer for thunks
 export memoize = (func) ->
   output = null
