@@ -45,7 +45,7 @@ bin:
   dsearch: './bin/dsearch'
 
 scripts:
-  test: \false
+  test: \./test.sh
 
 prefer-global: true
 

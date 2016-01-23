@@ -41,7 +41,7 @@
     "dsearch": "./bin/dsearch"
   },
   "scripts": {
-    "test": "false"
+    "test": "./test.sh"
   },
   "preferGlobal": true,
   "repository": {
