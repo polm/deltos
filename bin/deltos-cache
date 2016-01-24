@@ -3,4 +3,5 @@
 # put this in cron to keep it current
 set -e
 set -u
+DELTOS_HOME=${DELTOS_HOME:-$HOME/.deltos}
 deltos json > "$DELTOS_HOME/.deltos.cache.json"
