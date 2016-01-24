@@ -6,7 +6,7 @@
 ##############################################
 
 # Prepare widely-used environment settings
-export deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
+export deltos-home = (process.env.DELTOS_HOME or (process.env.HOME + '/.deltos')) + '/'
 export BASEDIR = deltos-home + '/by-id/'
 export get-filename = -> BASEDIR + it
 

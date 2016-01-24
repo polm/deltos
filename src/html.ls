@@ -1,12 +1,10 @@
 fs = require \fs
 ls = require \livescript
 markdown = require \marked
-{memoize, is-in, tagged, yaml} = require \./util
+{memoize, is-in, tagged, yaml, deltos-home} = require \./util
 {get-all-entries} = require \./entries
 {Obj, filter, keys, values, group-by, concat, unique, map, \
   take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
-
-deltos-home = (process.env.DELTOS_HOME or '~/.deltos') + '/'
 
 # placeholder globals; only required as needed
 ls = domino = RSS = eep = Section = {}
@@ -49,7 +47,7 @@ read-config = memoize ->
   try
     yaml fs.read-file-sync (deltos-home + \config), \utf-8
   catch e
-    console.error "Error reading config:" + e.message
+    console.error "Error reading config:\n" + e.message
     process.exit 1
 
 build-page = (eep, content) ->
