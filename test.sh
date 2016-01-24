@@ -25,6 +25,8 @@ $deltos build-site
 # and make sure it shows up in the html output
 grep -q "$testwords" $DELTOS_HOME/private/by-id/$(basename $newtest).html
 
+./bin/deltos-cache
+
 # TODO
 # - maybe figure how to test interactive parts?
 # - check RSS
