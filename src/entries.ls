@@ -101,7 +101,7 @@ get-new-id = ->
     if not fs.exists-sync fname
       return id
 
-new-daily = ->
+export new-daily = ->
   # make a daily note, filling with todos etc.
   today = local-iso-time!.substr 0, 10
   # don't create two dailys for today

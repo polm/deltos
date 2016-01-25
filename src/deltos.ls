@@ -10,7 +10,7 @@ init = ->
   mkdirp.sync deltos-home + \site
   mkdirp.sync deltos-home + \private
 
-{new-note,dump-tsv,dump-todos} = require \./entries
+{new-note,new-daily,dump-tsv,dump-todos} = require \./entries
 
 write-daily = -> launch-editor new-daily!
 write-post = -> launch-editor new-note it
