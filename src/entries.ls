@@ -1,9 +1,8 @@
 {memoize, normalize-date, local-iso-time, yaml, \
- deltos-home, BASEDIR, get-filename} = require \./util
+ deltos-home, BASEDIR, get-filename, tagged} = require \./util
 fs = require \fs
 uuid = require \node-uuid
-{Obj, filter, keys, values, group-by, concat, unique, map, \
-  take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
+{filter, values, sort-by, reverse} = require \prelude-ls
 
 export new-note = (title="",tags=[]) ->
   id = get-new-id!

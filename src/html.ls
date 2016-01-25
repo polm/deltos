@@ -3,8 +3,7 @@ ls = require \livescript
 markdown = require \marked
 {memoize, is-in, tagged, yaml, deltos-home} = require \./util
 {get-all-entries} = require \./entries
-{Obj, filter, keys, values, group-by, concat, unique, map, \
-  take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
+{map, take, sort-by, sort-with, reverse} = require \prelude-ls
 
 # placeholder globals; only required as needed
 ls = domino = RSS = eep = Section = {}
@@ -72,7 +71,6 @@ begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 # (which is to say the interior of this script)
 export eval-ls = ->
   eval ls.compile it, bare: true
-
 
 read-entry-body = ->
   raw = it.raw-body
@@ -183,7 +181,7 @@ get-entries-to-build = (published, priv) ->
   # If private, use everything
   entries = get-rendered-entries!
   if not priv
-    entries = entries |> filter (tagged published)
+    entries = entries.filter (tagged published)
   return entries |>
     sort-by (.date) |>
     reverse

@@ -1,5 +1,3 @@
-{Obj, filter, keys, values, group-by, concat, unique, map, \
-  take, sort-by, sort-with, reverse, intersection} = require \prelude-ls
 {read-stdin-as-lines-then, launch-editor, deltos-home, \
   get-filename} = require \./util
 
