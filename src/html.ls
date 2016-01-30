@@ -55,7 +55,18 @@ build-page = (eep, content) ->
   template = get-template!
   eep.push template.body, content, template.body
   if content.title then template.title = content.title
+  add-meta-tags template, content
   return template.outerHTML
+
+add-meta-tags = (dom, entry) ->
+  set-meta dom, \og:title, entry.title
+  set-meta dom, \og:description, dom.query-selector(\p)?.text-content.split("\n").join ' '
+  set-meta dom, \og:image, entry.first-image
+
+set-meta = (dom, prop, val) ->
+  # used for open graph/twitter cards
+  if not val then val = ''
+  dom.query-selector("meta[property=\"#prop\"]").set-attribute \content, val
 
 get-rendered-entries = ->
   # This just builds a body
@@ -77,9 +88,13 @@ read-entry-body = ->
       command = words.shift!
       switch command
       | \img =>
-        img-tag = "<img src=\"#{words.shift!}\"/>"
+        img-src = words.shift!
+        img-tag = "<img src=\"#{img-src}\"/>"
         caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
         line = "<div class=\"img\">" + img-tag + caption + "</div>"
+        # used for meta tags
+        if not it.first-image
+          it.first-image = img-src
       | \video =>
         vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
         caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
