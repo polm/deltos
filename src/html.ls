@@ -61,7 +61,15 @@ build-page = (eep, content) ->
 add-meta-tags = (dom, entry) ->
   set-meta dom, \og:title, entry.title
   set-meta dom, \og:description, dom.query-selector(\p)?.text-content.split("\n").join ' '
-  set-meta dom, \og:image, entry.first-image
+  # stash a logo here for pages that are text-only
+  default-image = dom.query-selector("meta[property=\"og:image\"]")?.attributes.default?.value
+  set-meta dom, \og:image, (entry.first-image or default-image)
+  # Twitter's summary_large_image looks better when an image is available,
+  # but looks horrible with small logos, so adjust accordingly
+  if entry.first-image
+    set-meta dom, \twitter:card, \summary_large_image
+  else
+    set-meta dom, \twitter:card, \summary
 
 set-meta = (dom, prop, val) ->
   # used for open graph/twitter cards
