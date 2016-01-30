@@ -42,7 +42,7 @@ $shaded: #ddd;
 */
 html, body {
   height: 100%;
-  background: #41221E; }
+  background: #3c2957; }
 
 a {
   color: black; }
@@ -58,15 +58,15 @@ p a[href*="//"]:not([href*="dampfkraft.com"]):after {
 */
 a.article-link {
   text-decoration: none;
-  color: #41221E; }
+  color: #3c2957; }
   a.article-link:visited {
-    color: #41221E; }
+    color: #3c2957; }
 
 #header {
   width: 100%;
   height: 100px;
-  background: url(floralwalls.jpg);
-  border-bottom: 10px solid #41221E; }
+  /*background: url(floralwalls.jpg);*/
+  border-bottom: 10px solid #3c2957; }
   #header img {
     background: white;
     margin-left: 23px; }
@@ -76,33 +76,33 @@ article {
   margin-bottom: 4em; }
 
 #column .img .caption {
-  background: #D3E4DF;
+  background: #b981b8;
   margin-top: -5px;
   /* not sure why this is necessary */
   padding: 0 0.5em;
-  border: 2px solid #41221E;
+  border: 2px solid #3c2957;
   border-top: none;
   border-right: none; }
 
 #footer {
-  background: #41221E;
-  color: #D3E4DF; }
+  background: #3c2957;
+  color: #b981b8; }
   #footer p {
     width: 550px; }
   #footer a {
-    color: #D3E4DF; }
+    color: #b981b8; }
   #footer a:visited {
-    color: #D3E4DF; }
+    color: #b981b8; }
 
 #column {
-  border-top: 10px solid #D3E4DF;
-  border-bottom: 10px solid #D3E4DF;
+  border-top: 10px solid #b981b8;
+  border-bottom: 10px solid #b981b8;
   background: white; }
   #column blockquote, #column pre {
-    background: #D3E4DF;
+    background: #b981b8;
     margin: 0;
     padding: 0.75em;
-    border-top: 2px solid #41221E; }
+    border-top: 2px solid #3c2957; }
     #column blockquote p, #column pre p {
       margin: 0; }
 
@@ -112,7 +112,7 @@ article {
   font-family: "EB Garamond", Georgia, serif; }
   #column .location, #column .series, #footer .location, #footer .series {
     margin: 0.5em 0 -1em 0;
-    color: #41221E;
+    color: #3c2957;
     font-style: italic;
     font-size: 100%; }
   #column p, #column li, #footer p, #footer li {
@@ -131,7 +131,7 @@ article {
     font-weight: normal;
     margin-left: -20px;
     margin-bottom: -0.25em;
-    color: #41221E; }
+    color: #3c2957; }
   #column h1, #footer h1 {
     font-size: 3em; }
   #column h2, #footer h2 {
@@ -143,7 +143,7 @@ article {
   #column code, #footer code {
     font-family: profontwindowsregular, Courier New, monospace; }
   #column li code, #column p code, #footer li code, #footer p code {
-    background: #D3E4DF;
+    background: #b981b8;
     padding: 1px 5px; }
   #column .date, #footer .date {
     font-style: italic; }
