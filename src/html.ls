@@ -1,5 +1,4 @@
 fs = require \fs
-ls = require \livescript
 markdown = require \marked
 {memoize, is-in, tagged, yaml, deltos-home} = require \./util
 {get-all-entries} = require \./entries
@@ -67,19 +66,12 @@ get-rendered-entries = ->
 
 begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 
-# XXX note that eval'd code has full access to the calling context 
-# (which is to say the interior of this script)
-export eval-ls = ->
-  eval ls.compile it, bare: true
-
 read-entry-body = ->
   raw = it.raw-body
   expanded = ''
   if not raw then return '' # it's ok to be empty
   for line in raw.split "\n"
-    if begins-with \], line
-        line = eval-ls line.substr 1
-    else if begins-with \!, line
+    if begins-with \!, line
       line = line.slice 1 # discard exclamation
       words = line.split ' '
       command = words.shift!
@@ -94,6 +86,7 @@ read-entry-body = ->
         line = "<div class=\"img\">" + vid-tag + caption + "</div>"
       | \archive => line = build-list-page!.join "\n"
       | \children => line = build-list-page(get-child-entries it).join "\n"
+      | \recent => line = build-list-page!.slice(0, 5).join "\n"
       | \.rule =>
           # use the markdown thing and replace the default <p> tag
           line = '<p class="rule">' + markdown(words.join ' ').substr 3
