@@ -1,5 +1,6 @@
 {read-stdin-as-lines-then, launch-editor, deltos-home, \
   get-filename} = require \./util
+fs = require \fs
 
 # Top-level commands - these are called more or less directly by the command line
 #
@@ -16,7 +17,7 @@ write-daily = -> launch-editor new-daily!
 write-post = -> launch-editor new-note it
 edit-post = -> launch-editor it
 
-{render, build-site, build-private-reference, all-to-json} = require \./html
+{render, build-site, build-private-reference, dump-json} = require \./html
 
 # Actually handling command line arguments
 
@@ -37,12 +38,16 @@ add-command "post [title...]", "Start a new post in $EDITOR", ->
   write-post process.argv.slice(3).join ' '
 add-command "edit [id]", "Edit an existing post", ->
   edit-post get-filename process.argv.3
+
 add-command "render [id]", "Render [id] as HTML", ->
   console.log render process.argv.3
 add-command \build-site, "Build static HTML", ->
   build-private-reference!
   build-site!
-add-command \json, "Dump all entries to JSON", all-to-json
+add-command \json, "Dump all entries to JSON", ->
+  console.log dump-json!
+add-command \cache, "Cache json dump", ->
+  fs.write-file-sync (deltos-home + \deltos.cache.json), dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
 add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
 add-command \version, "Show version number", ->

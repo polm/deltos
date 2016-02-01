@@ -25,13 +25,15 @@ export build-site = (priv=false)->
   build-site-html site-root, entries
   build-rss site-root, config, entries
 
-export all-to-json = ->
+export dump-json = ->
   html-init!
   entries = get-rendered-entries! |> sort-by (.date) |> reverse
+  out = []
   for entry in entries
     entry.tags = entry.tags.map String # numeric tags should still be strings
     entry.body = searchable-text entry.body
-    console.log JSON.stringify entry
+    out.push JSON.stringify entry
+  return out.join "\n"
 
 html-init = ->
   # the requires for this are slow, so no point in adding them on the cli
