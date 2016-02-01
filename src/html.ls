@@ -5,7 +5,7 @@ markdown = require \marked
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 
 # placeholder globals; only required as needed
-ls = domino = RSS = eep = Section = {}
+domino = RSS = eep = Section = {}
 
 export render = ->
   it.link = '/by-id/' + it.id + \.html
@@ -41,7 +41,6 @@ html-init = ->
   Section := eep.Section
   domino := require \domino
   RSS := require \rss
-  ls := require \livescript
 
 read-config = memoize ->
   try
