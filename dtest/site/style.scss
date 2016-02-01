@@ -25,18 +25,13 @@
     }
 
     h1 { font-size: 2em !important; }
-    #header, #header img {height: 50px !important}
+    #header, #header img {height: 50px !important;background-size: 25px !important}
 }
 
 $bgcolor: #3c2957;
 $fgcolor: #b981b8;
 $shaded: $fgcolor; 
 $gray: #666; 
-/*
-$fgcolor: white; 
-$bgcolor: black;
-$shaded: #ddd;
-*/
 
 html, body { 
   height: 100% ;
@@ -62,7 +57,10 @@ a.article-link {
 #header {
     width: 100%; 
     height: 100px;
-    /*background: url(floralwalls.jpg);*/
+    background: url(/meander.50.png);
+    background-repeat: repeat-x;
+    background-position: bottom;
+
     img { background: white; margin-left: 23px;}
     border-bottom: 10px solid $bgcolor;
 }
@@ -83,7 +81,7 @@ article {
 
 #footer {
   background: $bgcolor;
-  color: $fgcolor;
+  color: white;
   p { width: 550px; }
   a { color: $fgcolor; }
   a:visited { color: $shaded }
