@@ -23,13 +23,12 @@ export dump-todos = ->
   return entries.map(-> "- .(#{it.title}//#{it.id}) #{it.todo}").join "\n"
 
 export dump-tsv = ->
-  # dump a simple tsv file with fields (id, tags, title)
+  # dump a simple tsv file with fields (title, tags, id)
   entries = get-all-entries!
   out = []
   for entry in entries
-    out.push [entry.id, entry.title, (entry.tags.join ',')].join '\t'
+    out.push [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
   return out.join "\n"
-
 
 read-entry = ->
   # "it" is raw entry as string as input
