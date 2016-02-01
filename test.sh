@@ -13,7 +13,7 @@ deltos="./bin/deltos"
 $deltos init
 $deltos tsv > /dev/null
 $deltos json > /dev/null
-./bin/deltos-cache
+$deltos cache
 
 # to test creation, make a file...
 newtest=$($deltos new Testy)
@@ -24,8 +24,6 @@ echo -e "\nwords words $testwords\n" >> $newtest
 $deltos build-site
 # and make sure it shows up in the html output
 grep -q "$testwords" $DELTOS_HOME/private/by-id/$(basename $newtest).html
-
-./bin/deltos-cache
 
 # TODO
 # - maybe figure how to test interactive parts?
