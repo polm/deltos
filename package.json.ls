@@ -40,7 +40,6 @@ files:
 main: './lib'
 bin:
   deltos: './bin/deltos'
-  'deltos-cache': './bin/deltos-cache'
   dsearch: './bin/dsearch'
 
 scripts:
