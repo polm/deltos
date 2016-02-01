@@ -8,7 +8,7 @@ set -u
 set -o pipefail
 
 DELTOS_HOME=${DELTOS_HOME:-~/.deltos}
-hit=$(cat "$DELTOS_HOME/.deltos.cache.json" | \
+hit=$(cat "$DELTOS_HOME/deltos.cache.json" | \
   jq -r '[.title , (.tags | join(", ") ) , .id] | join(" | ")' | \
   percol | \
   cut -d"|" -f3)
