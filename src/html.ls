@@ -9,7 +9,7 @@ domino = RSS = eep = Section = {}
 
 export render = ->
   it.link = '/by-id/' + it.id + \.html
-  build-page entry-rules!, it
+  build-page-html entry-rules!, it
 
 export build-private-reference = ->
   build-site true
@@ -30,8 +30,7 @@ export dump-json = ->
   entries = get-rendered-entries! |> sort-by (.date) |> reverse
   out = []
   for entry in entries
-    entry.tags = entry.tags.map String # numeric tags should still be strings
-    entry.body = searchable-text entry.body
+    data = build-page-data entry-rules!, entry
     out.push JSON.stringify entry
   return out.join "\n"
 
@@ -49,7 +48,7 @@ read-config = memoize ->
     console.error "Error reading config:\n" + e.message
     process.exit 1
 
-build-page = (eep, content) ->
+build-page-core = (eep, content) ->
   # This builds a whole page with <head> etc.
   if content.raw-body
     content.body = read-entry-body content
@@ -57,25 +56,39 @@ build-page = (eep, content) ->
   eep.push template.body, content, template.body
   if content.title then template.title = content.title
   add-meta-tags template, content
-  return template.outerHTML
+  return {dom: template, entry: content}
+
+build-page-html = (eep, content) ->
+  build-page-core(eep, content).dom.outerHTML
+
+build-page-data = (eep, content) ->
+  # for JSON dump
+  build-page-core(eep, content).entry
 
 add-meta-tags = (dom, entry) ->
-  set-meta dom, \og:title, entry.title
-  set-meta dom, \og:description, dom.query-selector(\p)?.text-content.split("\n").join ' '
-  # stash a logo here for pages that are text-only
-  default-image = dom.query-selector("meta[property=\"og:image\"]")?.attributes.default?.value
-  set-meta dom, \og:image, (entry.first-image or default-image)
+  metadata = get-meta-data dom, entry
+  for key in <[ title description image ]>
+    set-meta dom, "og:#key", metadata[key]
+    entry[key] = metadata[key]
   # Twitter's summary_large_image looks better when an image is available,
   # but looks horrible with small logos, so adjust accordingly
-  if entry.first-image
-    set-meta dom, \twitter:card, \summary_large_image
-  else
-    set-meta dom, \twitter:card, \summary
+  card-type = if entry.first-image then \summary_large_image else \summary
+  set-meta dom, \twitter:card, card-type
+
+default-image = (dom) ->
+  # a logo here for pages that are text-only
+  dom.query-selector("meta[property=\"og:image\"]")?.attributes.default?.value
 
 set-meta = (dom, prop, val) ->
   # used for open graph/twitter cards
   if not val then val = ''
   dom.query-selector("meta[property=\"#prop\"]").set-attribute \content, val
+
+get-meta-data = (dom, entry) ->
+  # while it's a little weird, this is data for meta-tags rather than generic "metadata"
+  title: entry.title
+  description: dom.query-selector(\p)?.text-content.split("\n").join ' '
+  image: (entry.first-image or default-image dom)
 
 get-rendered-entries = ->
   # This just builds a body
@@ -206,9 +219,8 @@ get-entries-to-build = (published, priv) ->
 build-site-html = (root, entries) ->
   # update individual post html
   for entry in entries
-    page = render entry
     fname = root + "/by-id/" + entry.id + ".html"
-    fs.write-file-sync fname, page
+    fs.write-file-sync fname, render entry
 
 build-rss = (root, config, entries) ->
   rss = new RSS {
