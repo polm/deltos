@@ -45,6 +45,4 @@ search-hits = (entry, query) ->
   (new RegExp query, \i).test entry.searchable-text
 
 input = document.query-selector \.deltos-search
-input.onfocus = ->
-  input.scroll-into-view!
 
