@@ -121,6 +121,10 @@ read-entry-body = ->
         vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
         caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
         line = "<div class=\"img\">" + vid-tag + caption + "</div>"
+      | \search => line = '''
+         <input class="deltos-search" type="text"></input> 
+         <div class="deltos-results"></div> 
+         <script src="/search.js"></script>'''
       | \archive => line = build-list-page!.join "\n"
       | \children => line = build-list-page(get-child-entries it).join "\n"
       | \recent => line = build-list-page!.slice(0, 5).join "\n"
