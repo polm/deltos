@@ -1,4 +1,4 @@
-all: src/deltos.ls src/equaeverpoise.ls
+all: src/*ls
 	lsc -c -o lib src/
 
 clean:
