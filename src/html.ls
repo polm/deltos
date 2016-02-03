@@ -16,22 +16,28 @@ export build-private-reference = ->
 
 export build-site = (priv=false)->
   html-init!
-  config = read-config!
-  published = config.site.tag
   site-root = deltos-home + \site/
   if priv then site-root = deltos-home + \private/
 
-  entries = get-entries-to-build published, priv
+  entries = get-entries-to-build priv
   build-site-html site-root, entries
-  build-rss site-root, config, entries
+  # hidden entries have html built but don't show up in rss or search
+  # good for meta pages (index, archive, search) and drafts
+  entries = entries.filter -> not tagged \hidden, it
+  build-rss site-root, read-config!, entries
+  if not priv
+    fs.write-file-sync (deltos-home + \deltos.published.json), entries-to-json entries
 
 export dump-json = ->
-  html-init!
   entries = get-rendered-entries! |> sort-by (.date) |> reverse
+  entries-to-json entries
+
+entries-to-json = (entries) ->
+  html-init!
   out = []
   for entry in entries
     data = build-page-data entry-rules!, entry
-    out.push JSON.stringify entry
+    out.push JSON.stringify data
   return out.join "\n"
 
 html-init = ->
@@ -63,7 +69,9 @@ build-page-html = (eep, content) ->
 
 build-page-data = (eep, content) ->
   # for JSON dump
-  build-page-core(eep, content).entry
+  {dom, entry} = build-page-core(eep, content)
+  entry.searchable-text = entry.title + "\n" + dom.query-selector('.content').text-content
+  return entry
 
 add-meta-tags = (dom, entry) ->
   metadata = get-meta-data dom, entry
@@ -121,10 +129,8 @@ read-entry-body = ->
         vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
         caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
         line = "<div class=\"img\">" + vid-tag + caption + "</div>"
-      | \search => line = '''
-         <input class="deltos-search" type="text"></input> 
-         <div class="deltos-results"></div> 
-         <script src="/search.js"></script>'''
+      # note: this originally had spaces but that causes marked to add a <p> tag :(
+      | \search => line = '<div class="search"><input class="deltos-search" type="text"></input><div class="deltos-results"></div><script src="/search.js"></script></div>'
       | \archive => line = build-list-page!.join "\n"
       | \children => line = build-list-page(get-child-entries it).join "\n"
       | \recent => line = build-list-page!.slice(0, 5).join "\n"
@@ -166,17 +172,17 @@ deltos-link-to-html = ->
   it.replace link-regex, (matched, label, dest) -> "<a href=\"/by-id/#{dest}.html\">#{label}</a>"
 
 to-markdown-link = ->
+  #TODO group magic tags somewhere else
   tags = it.tags.filter(-> it != \published).join ", "
   "- [#{it.title}](/by-id/#{it.id}.html) <span class=\"tags\">#{tags}</span>"
 
 build-list-page = (entries) ->
   if not entries then entries = get-all-entries!
 
-  # remove meta-entries like Archive, top page
-  config = read-config!
-  for tag in config.site["exclude-tags"]
-    entries = entries.filter (-> not tagged tag, it)
-  entries = entries.filter (-> tagged \published, it)
+  # remove hidden entries
+  entries = entries
+    .filter (tagged \published)
+    .filter (-> not tagged \hidden, it)
 
   sort-by (.date), entries |>
     reverse |>
@@ -214,8 +220,7 @@ get-entries-to-build = (published, priv) ->
   # If this is a public html version, only show entries tagged for publication
   # If private, use everything
   entries = get-rendered-entries!
-  if not priv
-    entries = entries.filter (tagged published)
+  if not priv then entries = entries.filter (tagged \published)
   return entries |>
     sort-by (.date) |>
     reverse
@@ -235,9 +240,6 @@ build-rss = (root, config, entries) ->
     feed_url: config.site.url + "/index.rss"
     pubDate: new Date!
   }
-
-  for tag in config.site["exclude-tags"]
-    entries = entries.filter (-> not tagged tag, it)
 
   for entry in entries
     entry.description = entry.body

@@ -14,9 +14,9 @@ load-entries-then ->
   input = document.query-selector \.deltos-search
   input.oninput = search
 
-make-hit-div = (hit, query) ->
+make-hit-div = (entry) ->
   div = document.create-element \div
-  div.innerHTML = make-embed hit
+  div.innerHTML = make-embed entry
   return div
 
 make-embed = (entry) ->
@@ -36,9 +36,13 @@ search = ->
   rd.innerHTML = ''
   query = input.value.to-lower-case!
   for entry in entries
-    if query.length == 0 or -1 < entry.body.index-of query
+    if search-hits entry, query
       rd.append-child make-hit-div entry
     if rd.length > 50 then return # we have enough
+
+search-hits = (entry, query) ->
+  if not query or query.length == 0 then return true
+  (new RegExp query, \i).test entry.searchable-text
 
 input = document.query-selector \.deltos-search
 input.onfocus = ->
