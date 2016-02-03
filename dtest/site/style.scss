@@ -164,13 +164,53 @@ article {
       font-size: 1.5em;
   }
 
-  .deltos-results {
-      max-height: 12em;
+  .summary-small {
+    height: 50px;
+    overflow: hidden;
+    border: 1px solid #999;
+    .imgwrapper {
+      float: left;
+      background-size: cover;
+      background-image: url(/dklogo.simple.png);
+      background-position: center;
+      height: 50px;
+      width: 50px;
+      border-right: 1px solid gray;
+      margin-right: 15px;
+    }
+
+    h2 {
+      font-weight: bold;
+      font-size: 1.3em;
+      margin: 0.5em 0 0 0;
+    }
+    p { display: none; }
+  }
+
+  .summary {
+    height: 125px;
+    overflow: hidden;
+    border: 1px solid #999;
+    .imgwrapper {
+      float: left;
+      background-size: cover;
+      background-image: url(/dklogo.simple.png);
+      background-position: center;
+      height: 125px;
+      width: 125px;
+      border-right: 1px solid gray;
+      margin-right: 15px;
+    }
+    p {
+      height: 60px;
+      margin: 0.5em;
       overflow: hidden;
-      div {
-          max-height: 3em;
-          overflow: hidden;
-      }
+    }
+    h2 {
+      font-weight: bold;
+      font-size: 1.3em;
+      margin: 0.5em 0 0 0;
+    }
   }
 
 }
