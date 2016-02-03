@@ -22,6 +22,7 @@ dependencies:
   domino: \^1.0.19
   rss: \^1.0.0
   mkdirp: \^0.5.1
+  searchy: \^0.0.2
 
 dev-dependencies: {}
 
