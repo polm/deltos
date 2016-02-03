@@ -13,6 +13,7 @@ load-entries-then ->
   window.entries = entries
   input = document.query-selector \.deltos-search
   input.oninput = search
+  search!
 
 make-hit-div = (entry) ->
   div = document.create-element \div
