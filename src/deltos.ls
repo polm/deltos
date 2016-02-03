@@ -29,6 +29,9 @@ add-command = (name, desc, func) ->
   name = name.split(" ").0 # drop arguments etc.
   commands[name] = func
 
+add-command \search, "search", ->
+  {launch-search} = require \./util
+  launch-search!
 add-command "init", "Set up DELTOS_HOME", init
 add-command "new [title...]", "Create a note and print the filename", ->
   console.log new-note process.argv.slice(3).join ' '
@@ -38,7 +41,6 @@ add-command "post [title...]", "Start a new post in $EDITOR", ->
   write-post process.argv.slice(3).join ' '
 add-command "edit [id]", "Edit an existing post", ->
   edit-post get-filename process.argv.3
-
 add-command "render [id]", "Render [id] as HTML", ->
   console.log render process.argv.3
 add-command \build-site, "Build static HTML", ->

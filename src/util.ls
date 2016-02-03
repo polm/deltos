@@ -76,4 +76,12 @@ export launch-editor = (file, after) ->
 
   after?!
 
+export launch-search = (after) ->
+  {search} = require \searchy
+  {dump-tsv} = require \./entries
+  stuff = dump-tsv!.split "\n"
+  stuff = stuff.map -> it.split("\t").join " :: "
+  search stuff, ->
+    launch-editor get-filename it.split(" :: ").2.trim!
+
 
