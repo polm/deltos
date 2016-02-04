@@ -1,13 +1,9 @@
 
-         _      _ _            
-      __| | ___| | |_ ___  ___ 
-     / _` |/ _ \ | __/ _ \/ __|
-    | (_| |  __/ | || (_) \__ \
-     \__,_|\___|_|\__\___/|___/
-                               
-    ===============================
+![deltos logo](http://i.imgur.com/HUqla3j.png)
 
-Deltos is a tool for managing personal information. 
+# Deltos
+
+Deltos is a magic notepad, a tool for managing personal information. 
 
 # Getting started
 
@@ -29,12 +25,10 @@ If you want to search using the included tools you'll need
 [percol](https://github.com/mooz/percol). Once those are installed you can
 search just by running: 
 
-    deltos cache && dsearch
+    deltos cache && deltos search
 
 Just type to filter entries displayed, and select one from the list to edit it.
-To make sure the cache is regenerated regularly add an entry to your crontab,
-remembering to set the environment variable. On most crons you can put in an
-entry like this (assuming `deltos-cache` is in your `PATH`): 
+To make sure the cache is regenerated regularly add an entry to your crontab:
 
     */10 * * * * deltos cache
 
