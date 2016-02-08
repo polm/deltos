@@ -26,7 +26,7 @@ export build-site = (priv=false)->
   entries = entries.filter -> not tagged \hidden, it
   build-rss site-root, read-config!, entries
   if not priv
-    fs.write-file-sync (deltos-home + \deltos.published.json), entries-to-json entries
+    fs.write-file-sync (site-root + \deltos.json), entries-to-json entries
 
 export dump-json = ->
   entries = get-rendered-entries! |> sort-by (.date) |> reverse
