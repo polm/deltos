@@ -36,8 +36,7 @@
   ],
   "main": "./lib",
   "bin": {
-    "deltos": "./bin/deltos",
-    "dsearch": "./bin/dsearch"
+    "deltos": "./bin/deltos"
   },
   "scripts": {
     "test": "./test.sh"

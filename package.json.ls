@@ -41,7 +41,6 @@ files:
 main: './lib'
 bin:
   deltos: './bin/deltos'
-  dsearch: './bin/dsearch'
 
 scripts:
   test: \./test.sh
