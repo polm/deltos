@@ -23,8 +23,13 @@ export dump-todos = ->
   return entries.map(-> "- .(#{it.title}//#{it.id}) #{it.todo}").join "\n"
 
 export dump-tsv = ->
+  dump-tsv-core get-all-entries!
+
+export dump-tsv-tagged = (tag) ->
+  dump-tsv-core (get-all-entries! |> filter tagged tag)
+
+dump-tsv-core = (entries) ->
   # dump a simple tsv file with fields (title, tags, id)
-  entries = get-all-entries!
   out = []
   for entry in entries
     out.push [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'

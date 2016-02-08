@@ -11,7 +11,7 @@ init = ->
   mkdirp.sync deltos-home + \site
   mkdirp.sync deltos-home + \private
 
-{new-note,new-daily,dump-tsv,dump-todos} = require \./entries
+{new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos} = require \./entries
 
 write-daily = -> launch-editor new-daily!
 write-post = -> launch-editor new-note it
@@ -51,6 +51,8 @@ add-command \json, "Dump all entries to JSON", ->
 add-command \cache, "Cache json dump", ->
   fs.write-file-sync (deltos-home + \deltos.cache.json), dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
+add-command \tagged,  "Dump TSV for posts with tag", ->
+  console.log dump-tsv-tagged process.argv.3
 add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
 add-command \version, "Show version number", ->
   pkg = require \../package.json
