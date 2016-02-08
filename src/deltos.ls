@@ -1,5 +1,5 @@
 {read-stdin-as-lines-then, launch-editor, deltos-home, \
-  get-filename} = require \./util
+  get-filename, read-config} = require \./util
 fs = require \fs
 
 # Top-level commands - these are called more or less directly by the command line
@@ -10,6 +10,8 @@ init = ->
   mkdirp.sync deltos-home + \by-id
   mkdirp.sync deltos-home + \site
   mkdirp.sync deltos-home + \private
+
+config = read-config!
 
 {new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos} = require \./entries
 

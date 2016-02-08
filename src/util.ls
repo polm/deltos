@@ -4,12 +4,12 @@
 # - entry list manipulation (tagged, is-in, etc.)
 # - time-related code (local-iso-time, normalize-date)
 ##############################################
-
 # Prepare widely-used environment settings
 export deltos-home = (process.env.DELTOS_HOME or (process.env.HOME + '/.deltos')) + '/'
 export BASEDIR = deltos-home + '/by-id/'
 export get-filename = -> BASEDIR + it
 
+fs = require \fs
 Yaml = require \js-yaml
 export yaml = ->
   # The failsafe schema interperets all terminal values as strings
@@ -83,5 +83,12 @@ export launch-search = (after) ->
   stuff = stuff.map -> it.split("\t").join " :: "
   search stuff, ->
     launch-editor get-filename it.split(" :: ").2.trim!
+
+export read-config = memoize ->
+  try
+    yaml fs.read-file-sync (deltos-home + \config), \utf-8
+  catch e
+    console.error "Error reading config:\n" + e.message
+    process.exit 1
 
 

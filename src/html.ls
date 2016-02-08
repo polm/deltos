@@ -1,6 +1,6 @@
 fs = require \fs
 markdown = require \marked
-{memoize, is-in, tagged, yaml, deltos-home} = require \./util
+{memoize, is-in, tagged, yaml, deltos-home, read-config} = require \./util
 {get-all-entries} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 
@@ -46,13 +46,6 @@ html-init = ->
   Section := eep.Section
   domino := require \domino
   RSS := require \rss
-
-read-config = memoize ->
-  try
-    yaml fs.read-file-sync (deltos-home + \config), \utf-8
-  catch e
-    console.error "Error reading config:\n" + e.message
-    process.exit 1
 
 build-page-core = (eep, content) ->
   # This builds a whole page with <head> etc.
