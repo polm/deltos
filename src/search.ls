@@ -25,7 +25,12 @@ make-embed = (entry) ->
   out += '<div class="summary-small">'
   out +='<div class=\"imgwrapper\" '
   if entry.image
-    out += "style=\"background-image: url(#{entry.image})\""
+    url = entry.image
+    # use small thumbnail if we've got imgur
+    # A more general solution would be nice...
+    if /imgur.com/.test entry.image
+      url = (url.substr 0, (url.length - 5)) + \s.jpg
+    out += "style=\"background-image: url(#{url})\""
   out += "></div>"
   out += "<h2>#{entry.title}</h2>"
   out += "<p>#{entry.description}</p>"
