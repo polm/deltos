@@ -34,15 +34,15 @@ add-command \search, "search", ->
   launch-search!
 add-command "init", "Set up DELTOS_HOME", init
 add-command "new [title...]", "Create a note and print the filename", ->
-  console.log new-note process.argv.slice(3).join ' '
+  console.log new-note it.join ' '
 add-command "daily", "Create a daily note and open in $EDITOR", ->
   write-daily!
-add-command "post [title...]", "Start a new post in $EDITOR", ->
-  write-post process.argv.slice(3).join ' '
+add-command "post [title...]", "Start a new post in $EDITOR", (...args)->
+  write-post args.join ' '
 add-command "edit [id]", "Edit an existing post", ->
-  edit-post get-filename process.argv.3
+  edit-post get-filename it
 add-command "render [id]", "Render [id] as HTML", ->
-  console.log render process.argv.3
+  console.log render it
 add-command \build-site, "Build static HTML", ->
   build-private-reference!
   build-site!
@@ -52,7 +52,7 @@ add-command \cache, "Cache json dump", ->
   fs.write-file-sync (deltos-home + \deltos.cache.json), dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
 add-command \tagged,  "Dump TSV for posts with tag", ->
-  console.log dump-tsv-tagged process.argv.3
+  console.log dump-tsv-tagged it
 add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
 add-command \version, "Show version number", ->
   pkg = require \../package.json
@@ -72,5 +72,5 @@ catch # bad command, print help
 if not func
   func = commands.help
 
-func!
+func.apply null, process.argv.slice 3
 
