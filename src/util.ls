@@ -77,12 +77,15 @@ export launch-editor = (file, after) ->
   after?!
 
 export launch-search = (after) ->
-  {search} = require \searchy
-  {dump-tsv} = require \./entries
+  # These requires are here because they are not otherwise used
+  # in particular, searchy can be slow to start if migemo is enabled
+  {search-using-default} = require \searchy
+  {dump-tsv, new-note} = require \./entries
   stuff = dump-tsv!.split "\n"
   stuff = stuff.map -> it.split("\t").join " :: "
-  search stuff, ->
-    launch-editor get-filename it.split(" :: ").2.trim!
+  edit-existing = -> launch-editor get-filename it.split(" :: ").2.trim!
+  edit-new = -> launch-editor new-note it
+  search-using-default stuff, edit-existing, edit-new
 
 export read-config = memoize ->
   try
