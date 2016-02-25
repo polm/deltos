@@ -2,5 +2,3 @@ site:
   title: Deltos Test Suite
   description: Stuff for testing Deltos
   url: http://github.com/polm/deltos
-  tag: published
-  exclude-tags: [ excluded ]
