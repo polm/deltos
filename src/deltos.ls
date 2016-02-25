@@ -13,7 +13,7 @@ init = ->
 
 config = read-config!
 
-{new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos} = require \./entries
+{new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos,grep-entries} = require \./entries
 
 write-daily = -> launch-editor new-daily!
 write-post = -> launch-editor new-note it
@@ -40,12 +40,14 @@ add-command "new [title...]", "Create a note and print the filename", (...args) 
   console.log new-note args.join ' '
 add-command "daily", "Create a daily note and open in $EDITOR", ->
   write-daily!
-add-command "post [title...]", "Start a new post in $EDITOR", (...args)->
+add-command "post [title...]", "Start a new post in $EDITOR", (...args) ->
   write-post args.join ' '
 add-command "edit [id]", "Edit an existing post", ->
   edit-post get-filename it
 add-command "render [id]", "Render [id] as HTML", ->
   console.log render it
+add-command "grep [pattern]", "Grep body of deltos documents", (pat) ->
+  grep-entries(pat).map -> console.log it
 add-command \build-site, "Build static HTML", ->
   build-private-reference!
   build-site!

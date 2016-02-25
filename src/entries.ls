@@ -35,6 +35,17 @@ dump-tsv-core = (entries) ->
     out.push [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
   return out.join "\n"
 
+export grep-entries = (pat) ->
+  # smart case - ignore case unless caps in search pattern
+  ignorecase = if /[A-Z]/.test pat then '' else \i
+  regex = new RegExp pat, ignorecase
+  entries = get-all-entries!
+  hits = []
+  for entry in entries
+    for line in entry.raw-body.split "\n"
+      if regex.test line then hits.push "#{entry.id}: #line"
+  return hits
+
 read-entry = ->
   # "it" is raw entry as string as input
   [header, body] = it.split "\n---\n"
