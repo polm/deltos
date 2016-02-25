@@ -9,6 +9,8 @@ export deltos-home = (process.env.DELTOS_HOME or (process.env.HOME + '/.deltos')
 export BASEDIR = deltos-home + '/by-id/'
 export get-filename = -> BASEDIR + it
 
+CONFIG = deltos-home + \config.yaml
+
 fs = require \fs
 Yaml = require \js-yaml
 export yaml = ->
@@ -89,9 +91,10 @@ export launch-search = (after) ->
 
 export read-config = memoize ->
   try
-    yaml fs.read-file-sync (deltos-home + \config), \utf-8
+    yaml fs.read-file-sync CONFIG, \utf-8
   catch e
     console.error "Error reading config:\n" + e.message
     process.exit 1
 
-
+export edit-config = ->
+  launch-editor CONFIG

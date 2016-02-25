@@ -1,5 +1,5 @@
 {read-stdin-as-lines-then, launch-editor, deltos-home, \
-  get-filename, read-config} = require \./util
+  get-filename, read-config, edit-config} = require \./util
 fs = require \fs
 
 # Top-level commands - these are called more or less directly by the command line
@@ -35,6 +35,7 @@ add-command \search, "search", ->
   {launch-search} = require \./util
   launch-search!
 add-command "init", "Set up DELTOS_HOME", init
+add-command "config", "Edit deltos config file", edit-config
 add-command "new [title...]", "Create a note and print the filename", (...args) ->
   console.log new-note args.join ' '
 add-command "daily", "Create a daily note and open in $EDITOR", ->
