@@ -24,7 +24,8 @@ dependencies:
   mkdirp: \^0.5.1
   searchy: \^0.0.10
 
-dev-dependencies: {}
+dev-dependencies:
+  livescript: \^1.4.0
 
 engines:
   node: '>= 0.10.0'
