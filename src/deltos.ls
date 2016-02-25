@@ -35,8 +35,8 @@ add-command \search, "search", ->
   {launch-search} = require \./util
   launch-search!
 add-command "init", "Set up DELTOS_HOME", init
-add-command "new [title...]", "Create a note and print the filename", ->
-  console.log new-note it.join ' '
+add-command "new [title...]", "Create a note and print the filename", (...args) ->
+  console.log new-note args.join ' '
 add-command "daily", "Create a daily note and open in $EDITOR", ->
   write-daily!
 add-command "post [title...]", "Start a new post in $EDITOR", (...args)->
