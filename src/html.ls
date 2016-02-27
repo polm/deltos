@@ -12,21 +12,25 @@ export render = ->
   build-page-html entry-rules!, it
 
 export build-private-reference = ->
-  build-site true
+  build-site-core get-all-entries!, deltos-home + \private/
 
-export build-site = (priv=false)->
-  html-init!
-  site-root = deltos-home + \site/
-  if priv then site-root = deltos-home + \private/
-
-  entries = get-entries-to-build priv
-  build-site-html site-root, entries
+export build-site = ->
+  # only published entries are rendered to the public html
+  entries = get-all-entries!.filter tagged \published
   # hidden entries have html built but don't show up in rss or search
   # good for meta pages (index, archive, search) and drafts
-  entries = entries.filter -> not tagged \hidden, it
-  build-rss site-root, read-config!, entries
-  if not priv
-    fs.write-file-sync (site-root + \deltos.json), entries-to-json entries
+  rss-entries = entries.filter -> not tagged \hidden, it
+  root = deltos-home + \site/
+  after = -> fs.write-file-sync (root + \deltos.json), entries-to-json entries
+  build-site-core entries, root, rss-entries, after
+
+build-site-core = (entries, site-root, rss-entries, after) ->
+  html-init!
+  build-site-html site-root, entries
+  if rss-entries
+    rss-entries = rss-entries |> sort-by (.date) |> reverse
+    build-rss site-root, read-config!, rss-entries
+  after?!
 
 export dump-json = ->
   entries = get-rendered-entries! |> sort-by (.date) |> reverse
@@ -208,15 +212,6 @@ build-hierarchical-list = (entries, depth, parent=null) ->
       out +=  build-hierarchical-list(entries, depth - 1, child.id)
                 .split("\n").map(-> spacer + it).join '\n'
   return out
-
-get-entries-to-build = (published, priv) ->
-  # If this is a public html version, only show entries tagged for publication
-  # If private, use everything
-  entries = get-rendered-entries!
-  if not priv then entries = entries.filter (tagged \published)
-  return entries |>
-    sort-by (.date) |>
-    reverse
 
 build-site-html = (root, entries) ->
   # update individual post html
