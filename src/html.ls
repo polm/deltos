@@ -20,17 +20,17 @@ export build-site = ->
   entries = get-all-entries!.filter tagged \published
   # hidden entries have html built but don't show up in rss or search
   # good for meta pages (index, archive, search) and drafts
-  rss-entries = entries.filter -> not tagged \hidden, it
+  public-entries = entries.filter -> not tagged \hidden, it
   root = deltos-home + \site/
-  after = -> fs.write-file-sync (root + \deltos.json), entries-to-json entries
-  build-site-core entries, root, rss-entries, after
+  after = -> fs.write-file-sync (root + \deltos.json), entries-to-json public-entries
+  build-site-core entries, root, public-entries, after
 
-build-site-core = (entries, site-root, rss-entries, after) ->
+build-site-core = (entries, site-root, public-entries, after) ->
   html-init!
   build-site-html site-root, entries
-  if rss-entries
-    rss-entries = rss-entries |> sort-by (.date) |> reverse
-    build-rss site-root, read-config!, rss-entries
+  if public-entries
+    public-entries = public-entries |> sort-by (.date) |> reverse
+    build-rss site-root, read-config!, public-entries
   after?!
 
 export dump-json = ->
