@@ -1,5 +1,6 @@
 fs = require \fs
-markdown = require \marked
+Markdown = require(\markdown-it)(html: true)
+markdown = -> Markdown.render it
 {memoize, is-in, tagged, yaml, deltos-home, read-config} = require \./util
 {get-all-entries} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
