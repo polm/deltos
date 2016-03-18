@@ -231,11 +231,13 @@ build-rss = (root, config, entries) ->
   }
 
   for entry in entries
-    entry.description = entry.body
-    entry.categories = entry.tags
-    entry.url = entry.link
-    entry.guid = entry.link
-    rss.item entry
+   rss.item do
+     title: entry.title
+     date: entry.date
+     description: entry.body
+     categories: entry.tags
+     url: entry.link
+     guid: entry.link
 
   fs.write-file-sync (root + "index.rss"), rss.xml!
 
