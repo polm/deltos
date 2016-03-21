@@ -20,12 +20,9 @@ Write a post. The header is just YAML, so feel free to add fields. Write a
 little note and put some tags in the `tags` field, comma separated. Then close
 your editor. 
 
-If you want to search using the included tools you'll need
-[jq](https://stedolan.github.io/jq/) and
-[percol](https://github.com/mooz/percol). Once those are installed you can
-search just by running: 
+You can search all your posts by just running: 
 
-    deltos cache && deltos search
+    deltos search
 
 Just type to filter entries displayed, and select one from the list to edit it.
 To make sure the cache is regenerated regularly add an entry to your crontab:
