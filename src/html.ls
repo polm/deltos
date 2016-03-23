@@ -222,11 +222,11 @@ build-site-html = (root, entries) ->
 
 build-rss = (root, config, entries) ->
   rss = new RSS {
-    title: config.site.title
-    description: config.site.description
+    title: config.title
+    description: config.description
     generator: \deltos
-    site_url: config.site.url
-    feed_url: config.site.url + "/index.rss"
+    site_url: config.url
+    feed_url: config.url + "/index.rss"
     pubDate: new Date!
   }
 

@@ -37,7 +37,7 @@ add-command \search, "search", ->
   launch-search!
 add-command "init", "Set up DELTOS_HOME", init
 add-command "title", "Show title of current Deltos", ->
-  console.log config.site.title
+  console.log config.title
 add-command "config", "Edit deltos config file", edit-config
 add-command "new [title...]", "Create a note and print the filename", (...args) ->
   console.log new-note args.join ' '
