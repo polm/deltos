@@ -14,7 +14,7 @@ init = ->
 
 config = read-config!
 
-{new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos,grep-entries} = require \./entries
+{new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos,grep-entries,philtre-entries} = require \./entries
 
 write-daily = -> launch-editor new-daily!
 write-post = -> launch-editor new-note it
@@ -51,6 +51,8 @@ add-command "render [id]", "Render [id] as HTML", ->
   console.log render it
 add-command "grep [pattern]", "Grep body of deltos documents", (pat) ->
   grep-entries(pat).map -> console.log it
+add-command "philtre [pattern]", "Philtre deltos documents", (query) ->
+  philtre-entries(query).map -> console.log it
 add-command \build-site, "Build static HTML", ->
   build-private-reference!
   build-site!

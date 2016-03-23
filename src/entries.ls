@@ -46,6 +46,14 @@ export grep-entries = (pat) ->
       if regex.test line then hits.push "#{entry.id}: #line"
   return hits
 
+export philtre-entries = (query) ->
+  # use philtre lib
+  {philtre} = require \philtre
+  out = []
+  for hit in philtre query, get-all-entries!
+    out.push "#{hit.id}: #{hit.title}"
+  return out
+
 read-entry = ->
   # "it" is raw entry as string as input
   [header, body] = it.split "\n---\n"
