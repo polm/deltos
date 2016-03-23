@@ -82,12 +82,20 @@ export launch-search = (after) ->
   # These requires are here because they are not otherwise used
   # in particular, searchy can be slow to start if migemo is enabled
   {search-using-default} = require \searchy
-  {dump-tsv, new-note} = require \./entries
-  lines = dump-tsv!.split "\n"
-  lines = lines.map -> it.split("\t").join " :: "
-  edit-existing = -> launch-editor get-filename it.split(" :: ").2.trim!
+  {philtre} = require \philtre
+  {dump-tsv, render-tsv-entry, new-note, get-all-entries} = require \./entries
+
+  entries = get-all-entries!
+  edit-existing = -> launch-editor get-filename it.id
   edit-new = -> launch-editor new-note it
-  search-using-default lines, edit-existing, edit-new
+
+  for entry in entries
+    entry.to-string = -> render-tsv-entry(this).split("\t").join(" :: ")
+  search-using-default entries, edit-existing, edit-new, (needle, haystack) ->
+    try
+      return philtre(needle, [haystack]).length
+    catch
+      return false
 
 export read-config = memoize ->
   try

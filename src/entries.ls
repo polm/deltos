@@ -22,6 +22,9 @@ export dump-todos = ->
   entries = get-all-entries! |> filter (-> it.todo and not it.done) |> sort-by (.todo)
   return entries.map(-> "- .(#{it.title}//#{it.id}) #{it.todo}").join "\n"
 
+export render-tsv-entry = (entry) ->
+  [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
+
 export dump-tsv = ->
   dump-tsv-core get-all-entries!
 
@@ -32,7 +35,7 @@ dump-tsv-core = (entries) ->
   # dump a simple tsv file with fields (title, tags, id)
   out = []
   for entry in entries
-    out.push [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
+    out.push render-tsv-entry entry
   return out.join "\n"
 
 export grep-entries = (pat) ->
