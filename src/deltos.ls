@@ -1,6 +1,8 @@
 {launch-editor, deltos-home, get-filename, read-config, edit-config} = require \./util
 fs = require \fs
 
+process.title = \deltos
+
 # Top-level commands - these are called more or less directly by the command line
 #
 init = ->
