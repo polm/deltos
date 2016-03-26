@@ -1,7 +1,7 @@
 fs = require \fs
 Markdown = require(\markdown-it)(html: true)
 markdown = -> Markdown.render it
-{memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config} = require \./util
+{memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 
@@ -18,9 +18,11 @@ export build-private-reference = ->
 export build-site = ->
   # only published entries are rendered to the public html
   entries = get-all-entries!.filter tagged \published
+
   # hidden entries have html built but don't show up in rss or search
   # good for meta pages (index, archive, search) and drafts
   public-entries = entries.filter -> not tagged \hidden, it
+
   root = deltos-home + \site/
   after = -> fs.write-file-sync (root + \deltos.json), entries-to-json public-entries
   build-site-core entries, root, public-entries, after
@@ -220,6 +222,8 @@ build-site-html = (root, entries) ->
     suffix = "/by-id/#{entry.id}"
 
     html-fname = "#{root}#{suffix}.html"
+    if get-mtime(html-fname) > get-mtime(get-filename entry.id)
+      continue
     fs.write-file-sync html-fname, render entry
 
     # write a deltos source file for other people to import
@@ -228,6 +232,9 @@ build-site-html = (root, entries) ->
     deltos-fname = "#{root}#{suffix}.deltos"
     output = (yaml-dump head) + "---\n" + body
     fs.write-file-sync deltos-fname, output
+
+get-mtime = (fname) ->
+  fs.stat-sync(fname).mtime
 
 build-rss = (root, config, entries) ->
   rss = new RSS {
