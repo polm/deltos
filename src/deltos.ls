@@ -32,13 +32,10 @@ add-command = (name, desc, func) ->
   name = name.split(" ").0 # drop arguments etc.
   commands[name] = func
 
-add-command \search, "search", ->
-  {launch-search} = require \./util
-  launch-search!
 add-command "init", "Set up DELTOS_HOME", init
-add-command "title", "Show title of current Deltos", ->
+add-command "title", "Show title of current deltos", ->
   console.log config.title
-add-command "config", "Edit deltos config file", edit-config
+add-command "config", "Edit config file", edit-config
 add-command "new [title...]", "Create a note and print the filename", (...args) ->
   console.log new-note args.join ' '
 add-command "daily", "Create a daily note and open in $EDITOR", ->
@@ -47,12 +44,15 @@ add-command "post [title...]", "Start a new post in $EDITOR", (...args) ->
   write-post args.join ' '
 add-command "edit [id]", "Edit an existing post", ->
   edit-post get-filename it
+add-command \search, "Interactive search", ->
+  {launch-search} = require \./util
+  launch-search!
+add-command "grep [pattern]", "Grep body of notes", (pat) ->
+  grep-entries(pat).map -> console.log it
+add-command "philtre [query]", "Philtre notes", (query) ->
+  philtre-entries(query).map -> console.log it
 add-command "render [id]", "Render [id] as HTML", ->
   console.log render it
-add-command "grep [pattern]", "Grep body of deltos documents", (pat) ->
-  grep-entries(pat).map -> console.log it
-add-command "philtre [pattern]", "Philtre deltos documents", (query) ->
-  philtre-entries(query).map -> console.log it
 add-command \build-site, "Build static HTML", ->
   build-private-reference!
   build-site!
@@ -70,8 +70,8 @@ add-command \version, "Show version number", ->
 add-command \help, "Show this help", ->
   console.log "usage: deltos <command> [options...]\n"
   for name,func of commands
-    #TODO get tabs right here
-    console.log "\t#{func.command}\t\t#{func.desc}"
+    pad = (' ' * (25 - func.command.length))
+    console.log "    #{func.command}#pad#{func.desc}"
   process.exit 1
 
 try
