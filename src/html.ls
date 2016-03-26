@@ -1,8 +1,8 @@
 fs = require \fs
 Markdown = require(\markdown-it)(html: true)
 markdown = -> Markdown.render it
-{memoize, is-in, tagged, yaml, deltos-home, read-config} = require \./util
-{get-all-entries} = require \./entries
+{memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config} = require \./util
+{get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 
 # placeholder globals; only required as needed
@@ -217,8 +217,17 @@ build-hierarchical-list = (entries, depth, parent=null) ->
 build-site-html = (root, entries) ->
   # update individual post html
   for entry in entries
-    fname = root + "/by-id/" + entry.id + ".html"
-    fs.write-file-sync fname, render entry
+    suffix = "/by-id/#{entry.id}"
+
+    html-fname = "#{root}#{suffix}.html"
+    fs.write-file-sync html-fname, render entry
+
+    # write a deltos source file for other people to import
+    [head, body] = get-raw-entry entry.id
+    head.source = "#{read-config!.url}#{suffix}.html"
+    deltos-fname = "#{root}#{suffix}.deltos"
+    output = (yaml-dump head) + "---\n" + body
+    fs.write-file-sync deltos-fname, output
 
 build-rss = (root, config, entries) ->
   rss = new RSS {

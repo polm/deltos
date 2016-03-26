@@ -115,6 +115,16 @@ export get-all-entries = memoize ->
 
   return values entries |> sort-by (.date) |> reverse
 
+export get-raw-entry = ->
+  [head, body] = get-entry-parts it
+  return [(yaml head), body]
+
+get-entry-parts = ->
+  text = fs.read-file-sync (get-filename it), \utf-8
+  head = text.split("\n---\n").0
+  body = text.split("\n---\n")[1 to].join "\n---\n"
+  return [head, body]
+
 get-new-id = ->
   # get a new uuid
   # check it doesn't exist; if it does, make another

@@ -21,6 +21,11 @@ export yaml = ->
   # uuids like "06382" being interpreted as octal
   Yaml.safe-load it, schema: Yaml.FAILSAFE_SCHEMA
 
+export yaml-dump = ->
+  # flowlevel controls how compact the exported yaml is
+  # as with reading, we only expect strings
+  Yaml.safe-dump it, schema: Yaml.FAILSAFE_SCHEMA, flow-level: 1
+
 # simple memoizer for thunks
 export memoize = (func) ->
   output = null
