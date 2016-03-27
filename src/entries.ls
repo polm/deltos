@@ -57,15 +57,20 @@ export philtre-entries = (query) ->
     out.push "#{hit.id}: #{hit.title}"
   return out
 
-read-entry = ->
-  # "it" is raw entry as string as input
-  [header, body] = it.split "\n---\n"
+read-entry = (id) ->
+  raw-text = fs.read-file-sync get-filename(id), \utf-8
   try
+    [header, body] = raw-text.split "\n---\n"
     metadata = yaml header
   catch e
     console.error "Error parsing YAML header:\n" + header
     console.error "Error message:" + e.message
-    process.exit 1
+    metadata = do
+      id: id
+      title: "Error parsing header"
+      date: new Date!
+    body = "Could not parse entry.\n\nError message:" + e.message
+    body += "\n\n# Original entry:\n\n" + raw-text
 
   normalize-date metadata
   if not metadata.title
@@ -80,13 +85,13 @@ read-entry = ->
     delete metadata.parent
   if metadata.parents # add some nice text
     if metadata.parents.length == 1
-      collection = read-entry-from-file get-filename metadata.parents.0
+      collection = read-entry metadata.parents.0
       metadata.collections = "This post is part of a collection on <a href=\"/by-id/#{collection.id}.html\">#{collection.title}</a>."
     else
       metadata.collections = "This post is part of collections on "
       colls = []
       for coll in metadata.parents
-        collection = read-entry-from-file get-filename coll
+        collection = read-entry coll
         colls.push "<a href=\"/by-id/#{collection.id}.html\">#{collection.title}</a>"
       colls[*-1] = "and " + colls[*-1] + "."
       metadata.collections += colls.join ", "
@@ -94,15 +99,11 @@ read-entry = ->
   metadata.raw-body = body
   return metadata
 
-read-entry-from-file = ->
-  entry = fs.read-file-sync it, \utf-8
-  read-entry entry
-
 # use this for filtering etc.
 export get-all-entries = memoize ->
   entries = {}
   for ff in fs.readdir-sync BASEDIR
-    entry = read-entry-from-file BASEDIR + ff
+    entry = read-entry ff
     entries[entry.id] = entry
 
   # populate "children" - this is not recursive
