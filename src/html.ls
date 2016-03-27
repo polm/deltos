@@ -234,7 +234,10 @@ build-site-html = (root, entries) ->
     fs.write-file-sync deltos-fname, output
 
 get-mtime = (fname) ->
-  fs.stat-sync(fname).mtime
+  try
+    fs.stat-sync(fname).mtime
+  catch # happens if file doesn't exist
+    return 0
 
 build-rss = (root, config, entries) ->
   rss = new RSS {
