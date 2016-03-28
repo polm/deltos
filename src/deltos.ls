@@ -58,8 +58,6 @@ add-command \build-site, "Build static HTML", ->
   build-site!
 add-command \json, "Dump all entries to JSON", ->
   console.log dump-json!
-add-command \cache, "Cache json dump", ->
-  fs.write-file-sync (deltos-home + \deltos.cache.json), dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
 add-command \tagged,  "Dump TSV for posts with tag", ->
   console.log dump-tsv-tagged it
