@@ -222,8 +222,13 @@ build-site-html = (root, entries) ->
     suffix = "/by-id/#{entry.id}"
 
     html-fname = "#{root}#{suffix}.html"
-    if get-mtime(html-fname) > get-mtime(get-filename entry.id)
-      continue
+    #TODO figure out how to make this work properly
+    # Building only if a file has been updated makes things much faster
+    # however, some files need to rebuilt any time other files change
+    # Examples include the top page and archive
+
+    #if get-mtime(html-fname) > get-mtime(get-filename entry.id)
+    #  continue
     fs.write-file-sync html-fname, render entry
 
     # write a deltos source file for other people to import
