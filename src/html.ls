@@ -13,7 +13,10 @@ export render = ->
   build-page-html entry-rules!, it
 
 export build-private-reference = ->
-  build-site-core get-all-entries!, deltos-home + \private/
+  root = deltos-home + \private/
+  entries = get-all-entries!
+  after = -> fs.write-file-sync (root + \deltos.json), entries-to-json entries
+  build-site-core entries, root, entries, after
 
 export build-site = ->
   # only published entries are rendered to the public html
