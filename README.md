@@ -25,9 +25,6 @@ You can search all your posts by just running:
     deltos search
 
 Just type to filter entries displayed, and select one from the list to edit it.
-To make sure the cache is regenerated regularly add an entry to your crontab:
-
-    */10 * * * * deltos cache
 
 If you use vim you'll want to check [deltos.vim](http://github.com/polm/deltos.vim). 
 
