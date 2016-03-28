@@ -69,6 +69,7 @@ read-entry = (id) ->
       id: id
       title: "Error parsing header"
       date: new Date!
+      tags: [\error]
     body = "Could not parse entry.\n\nError message:" + e.message
     body += "\n\n# Original entry:\n\n" + raw-text
 
