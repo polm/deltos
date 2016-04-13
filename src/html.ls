@@ -123,7 +123,7 @@ read-entry-body = ->
       | \img =>
         img-src = words.shift!
         img-tag = "<img src=\"#{img-src}\"/>"
-        caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
+        caption = if words.length then ('<p class="caption">' + markdown(words.join(' ')).substr 3) else ''
         line = "<div class=\"img\">" + img-tag + caption + "</div>"
         # used for meta tags
         if not it.first-image
