@@ -172,12 +172,17 @@ entry-rules = ->
 
 deltos-link-to-html = ->
   link-regex = /\.\(([^\/]*)\/\/([^\)]*)\)/g
-  it.replace link-regex, (matched, label, dest) -> "<a href=\"/by-id/#{dest}.html\">#{label}</a>"
+  entries = get-all-entries!
+  it.replace link-regex, (matched, label, dest) ->
+    entry = entries.filter(-> it.id == dest).0
+    "<a href=\"/by-id/#{dest}.html\##{get-slug entry}\">#{label}</a>"
+
+get-slug = (entry) ->
+  entry.title.replace(/ /g, '-').replace /[!@#$%^&\*\.\(\)\[\]\/\\'"{}?<>]/g, ''
 
 to-markdown-link = ->
-  #TODO group magic tags somewhere else
   tags = it.tags.filter(-> it != \published).join ", "
-  "- [#{it.title}](/by-id/#{it.id}.html) <span class=\"tags\">#{tags}</span>"
+  "- [#{it.title}](/by-id/#{it.id}.html\##{get-slug it}) <span class=\"tags\">#{tags}</span>"
 
 build-list-page = (entries) ->
   if not entries then entries = get-all-entries!
@@ -224,7 +229,6 @@ build-site-html = (root, entries) ->
   for entry in entries
     suffix = "/by-id/#{entry.id}"
 
-    html-fname = "#{root}#{suffix}.html"
     #TODO figure out how to make this work properly
     # Building only if a file has been updated makes things much faster
     # however, some files need to rebuilt any time other files change
@@ -232,7 +236,8 @@ build-site-html = (root, entries) ->
 
     #if get-mtime(html-fname) > get-mtime(get-filename entry.id)
     #  continue
-    fs.write-file-sync html-fname, render entry
+
+    fs.write-file-sync "#{root}#{suffix}.html", render entry
 
     # write a deltos source file for other people to import
     [head, body] = get-raw-entry entry.id
