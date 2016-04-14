@@ -64,9 +64,14 @@ search-hits = (entry, query) ->
   (new RegExp query, \i).test entry.searchable-text
 
 pointer-handler = ->
-  console.log this.pointer
   results = document.query-selector-all ".deltos-results .result"
   map results, -> it.class-list.remove \selected
+  event = it
+  re-render = ->
+    event.prevent-default!
+    search!
+    results := document.query-selector-all ".deltos-results .result"
+
   switch it.key-code
   # page up/down change the offset
   | 33, 34 =>
@@ -74,20 +79,24 @@ pointer-handler = ->
       this.offset = Math.max 0, this.offset - WINDOW
     if it.key-code == 34
       this.offset = Math.min (WINDOW * ~~(this.hits / WINDOW)), this.offset + WINDOW
-    console.log \here
-    #it.stop-propogation!
-    it.prevent-default!
-    this.pointer = -1
-    search!
+    re-render!
   # arrow up/down change the selected item
-  | 38 => this.pointer = Math.max -1, this.pointer - 1 # up
-  | 40 => this.pointer = Math.min (WINDOW - 1), this.pointer + 1
+  | 38 =>
+    if this.pointer == 0 and this.offset > 0
+      this.offset -= WINDOW
+      this.pointer = WINDOW
+      re-render!
+    this.pointer = Math.max -1, this.pointer - 1 # up
+  | 40 =>
+    if this.pointer + 1 == WINDOW and this.offset + WINDOW < this.hits
+      this.offset += WINDOW
+      this.pointer = -1
+      re-render!
+    this.pointer = Math.min (WINDOW - 1), this.pointer + 1
   | 13 => # enter selects current
     if this.pointer > -1 and this.pointer < results.length
       document.location = results[this.pointer].href
   default \ok
-  console.log "here: " + it.key-code
-  console.log "pointer: " + this.pointer
   results[this.pointer]?.class-list.add \selected
 
 input = document.query-selector \.deltos-search
