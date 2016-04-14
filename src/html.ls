@@ -133,7 +133,7 @@ read-entry-body = ->
         caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
         line = "<div class=\"img\">" + vid-tag + caption + "</div>"
       # note: this originally had spaces but that causes marked to add a <p> tag :(
-      | \search => line = '<div class="search"><input class="deltos-search" type="text"></input><div class="deltos-results"></div><script src="/search.js"></script></div>'
+      | \search => line = '<div class="search"><input class="deltos-search" type="text"></input><div class="deltos-results-summary"></div><div class="deltos-results"></div><script src="/search.js"></script></div>'
       | \archive => line = build-list-page!.join "\n"
       | \children => line = build-list-page(get-child-entries it).join "\n"
       | \recent => line = build-list-page!.slice(0, 5).join "\n"
