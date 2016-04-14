@@ -9,7 +9,7 @@ markdown = -> Markdown.render it
 domino = RSS = eep = Section = {}
 
 export render = ->
-  it.link = '/by-id/' + it.id + \.html
+  it.link = '/by-id/' + it.id + \.html + "#" + get-slug it
   build-page-html entry-rules!, it
 
 export build-private-reference = ->
