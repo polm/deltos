@@ -1,5 +1,13 @@
 # code to search through entries
 
+WINDOW = 5 # max entries to show at once
+
+{philtre} = require \philtre
+
+map = (list, func) ->
+  # for nodelists
+  Array.prototype.map.call list, func
+
 load-entries-then = (callback) ->
   req = new XMLHttpRequest!
   req.onload = callback
@@ -21,7 +29,7 @@ make-hit-div = (entry) ->
   return div
 
 make-embed = (entry) ->
-  out = "<a class=\"result\" href=\"/by-id/#{entry.id}.html\">"
+  out = "<a class=\"result\" href=\"#{entry.link}\">"
   out += '<div class="summary-small">'
   out +='<div class=\"imgwrapper\" '
   if entry.image
@@ -39,16 +47,52 @@ make-embed = (entry) ->
 search = ->
   rd = document.query-selector \.deltos-results
   input = document.query-selector \.deltos-search
+  summary = document.query-selector \.deltos-results-summary
   rd.innerHTML = ''
   query = input.value.to-lower-case!
-  for entry in entries
-    if search-hits entry, query
-      rd.append-child make-hit-div entry
-    if rd.length > 50 then return # we have enough
+  results = philtre query, entries
+  input.hits = results.length
+
+  out = results.slice input.offset, input.offset + WINDOW
+  summary.innerHTML = "Showing #{input.offset + 1} to #{input.offset + out.length} of #{results.length} hits"
+  for entry in out
+    rd.append-child make-hit-div entry
+
 
 search-hits = (entry, query) ->
   if not query or query.length == 0 then return true
   (new RegExp query, \i).test entry.searchable-text
 
+pointer-handler = ->
+  console.log this.pointer
+  results = document.query-selector-all ".deltos-results .result"
+  map results, -> it.class-list.remove \selected
+  switch it.key-code
+  # page up/down change the offset
+  | 33, 34 =>
+    if it.key-code == 33
+      this.offset = Math.max 0, this.offset - WINDOW
+    if it.key-code == 34
+      this.offset = Math.min (WINDOW * ~~(this.hits / WINDOW)), this.offset + WINDOW
+    console.log \here
+    #it.stop-propogation!
+    it.prevent-default!
+    this.pointer = -1
+    search!
+  # arrow up/down change the selected item
+  | 38 => this.pointer = Math.max -1, this.pointer - 1 # up
+  | 40 => this.pointer = Math.min (WINDOW - 1), this.pointer + 1
+  | 13 => # enter selects current
+    if this.pointer > -1 and this.pointer < results.length
+      document.location = results[this.pointer].href
+  default \ok
+  console.log "here: " + it.key-code
+  console.log "pointer: " + this.pointer
+  results[this.pointer]?.class-list.add \selected
+
 input = document.query-selector \.deltos-search
+input.pointer = -1
+input.offset = 0
+input.hits = 0
+input.onkeydown = pointer-handler
 
