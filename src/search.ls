@@ -104,4 +104,5 @@ input.pointer = -1
 input.offset = 0
 input.hits = 0
 input.onkeydown = pointer-handler
+input.focus!
 
