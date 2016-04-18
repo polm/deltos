@@ -141,15 +141,18 @@ export new-daily = ->
   # make a daily note, filling with todos etc.
   today = local-iso-time!.substr 0, 10
   # don't create two dailys for today
-  entries = get-all-entries!filter -> tagged(\daily, it) and today == it.date.substr 0, 10
-  if entries.length > 0
-    return get-filename entries.0.id
-  fname = new-note "Daily Notes - #today", [\daily]
-  fs.append-file-sync fname, "deltos todos\n"
-  #TODO maybe limit based on count or time?
+  entries = get-all-entries!
+  existing = entries.filter(-> it.daily == today)?0
+  if existing then return get-filename existing.id
+
+  yesterday = entries.filter(-> it.daily == get-yesterday!)?0
+
+  fname = new-note "Daily Notes - #today", [], daily: today
+  fs.append-file-sync fname, "\ndeltos todos\n"
   fs.append-file-sync fname, dump-todos!
-  #TODO fortunes?
   fs.append-file-sync fname, "\n\n"
+  if yesterday
+    fs.append-file-sync fname, ".(Yesterday//#{yesterday.id})\n\n"
   return fname
 
 
