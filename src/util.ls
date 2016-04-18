@@ -2,7 +2,7 @@
 # This includes:
 # - functional helpers (memoize, eval wrapper)
 # - entry list manipulation (tagged, is-in, etc.)
-# - time-related code (local-iso-time, normalize-date)
+# - time-related code (local-iso-time, get-yesterday)
 ##############################################
 # Prepare widely-used environment settings
 export deltos-home = (process.env.DELTOS_HOME or (process.env.HOME + '/.deltos')) + '/'
@@ -41,12 +41,6 @@ export tagged = (tag, entry) --> (not tag) or is-in entry.tags, tag
 
 export no-empty = -> it.filter (-> not (it == null or it == '') )
 
-export normalize-date = ->
-  # This needs to be done to handle some date stupidity
-  # YAML can save dates natively, but only recognizes a subset of ISO8601
-  # Specifically, 4-character timezones must have a colon (09:00, not 0900)
-  it.date = (new Date it.date).toISOString!
-
 export local-iso-time = (vsnow=0) ->
   # from here: http://stackoverflow.com/questions/10830357/javascript-toisostring-ignores-timezone-offset
   # Idea is to take a date, add our offset, get that as Z/UTC time, then just change the tz note
@@ -66,6 +60,22 @@ export local-iso-time = (vsnow=0) ->
   offset-string = '000000' + offset-double-oh-hours
   offset-string = offset-string.slice (offset-string.length - 4)
   return local-time + offset-prefix + offset-string
+
+export get-yesterday = ->
+  # This is tricky since we want to handle daylight savings etc.
+  today = local-iso-time!.substr 0, 10
+  hour = 1000 * 60 * 60
+  maybe-yesterday = local-iso-time (-22 * hour)
+
+  # short day
+  if maybe-yesterday != today then return maybe-yesterday.substr 0, 10
+
+  # normal case
+  maybe-yesterday = local-iso-time (-24 * hour)
+  if maybe-yesterday != today then return maybe-yesterday.substr 0, 10
+
+  # long day
+  return local-iso-time(-26 * hour).substr 0, 10
 
 export read-stdin-as-lines-then = (func) ->
   buf = ''

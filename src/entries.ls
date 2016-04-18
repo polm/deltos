@@ -1,4 +1,4 @@
-{memoize, normalize-date, local-iso-time, yaml, \
+{memoize, local-iso-time, get-yesterday, yaml, yaml-dump, \
  deltos-home, BASEDIR, get-filename, tagged} = require \./util
 fs = require \fs
 uuid = require \node-uuid
@@ -73,7 +73,6 @@ read-entry = (id) ->
     body = "Could not parse entry.\n\nError message:" + e.message
     body += "\n\n# Original entry:\n\n" + raw-text
 
-  normalize-date metadata
   if not metadata.title
       metadata.title = 'untitled'
   if not metadata.tags.0
