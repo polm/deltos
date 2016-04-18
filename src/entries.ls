@@ -4,17 +4,16 @@ fs = require \fs
 uuid = require \node-uuid
 {filter, values, sort-by, reverse} = require \prelude-ls
 
-export new-note = (title="",tags=[]) ->
-  id = get-new-id!
-  fname = get-filename id
-  # dump the template into it (date, tags, title, ---)
-  now = local-iso-time!
-  buf = ["id: #id",
-         "date: #now",
-         "title: #title",
-         "tags: [#{tags.join ", "}]",
-         "---\n"].join "\n"
-  fs.write-file-sync fname, buf
+export new-note = (title="", tags=[], metadata={}) ->
+  base = do
+    id: get-new-id!
+    date: local-iso-time!
+    title: title
+    tags: tags
+  for key of metadata
+    base[key] = metadata[key]
+  fname = get-filename base.id
+  fs.write-file-sync fname, (yaml-dump base) + "---\n"
   # finally print the name so it can be used
   return fname
 
