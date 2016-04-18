@@ -46,7 +46,7 @@ export local-iso-time = (vsnow=0) ->
   # Idea is to take a date, add our offset, get that as Z/UTC time, then just change the tz note
   offset = (new Date!).get-timezone-offset!
   offset-ms = offset * 60000
-  offset-ms += vsnow
+  offset-ms -= vsnow
   local-time = (new Date(Date.now! - offset-ms)).toISOString!slice 0, -1
   offset-hours = offset / 60
   offset-double-oh-hours = ~~(offset-hours) * 100
