@@ -1,4 +1,4 @@
-{launch-editor, deltos-home, get-filename, read-config, edit-config} = require \./util
+{launch-editor, deltos-home, get-filename, read-config, edit-config, install-theme} = require \./util
 fs = require \fs
 
 process.title = \deltos
@@ -9,10 +9,9 @@ init = ->
   # create empty directories needed for before first run
   mkdirp = require \mkdirp
   mkdirp.sync deltos-home + \by-id
-  mkdirp.sync deltos-home + \site
-  mkdirp.sync deltos-home + \private
+  mkdirp.sync deltos-home + \site/by-id
+  mkdirp.sync deltos-home + \private/by-id
 
-config = read-config!
 
 {new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos,grep-entries,philtre-entries} = require \./entries
 
@@ -34,7 +33,7 @@ add-command = (name, desc, func) ->
 
 add-command "init", "Set up DELTOS_HOME", init
 add-command "title", "Show title of current deltos", ->
-  console.log config.title
+  console.log read-config!.title
 add-command "config", "Edit config file", edit-config
 add-command "new [title...]", "Create a note and print the filename", (...args) ->
   console.log new-note args.join ' '
@@ -71,6 +70,8 @@ add-command \help, "Show this help", ->
     pad = (' ' * (25 - func.command.length))
     console.log "    #{func.command}#pad#{func.desc}"
   process.exit 1
+add-command \install-theme, "Install theme", ->
+  install-theme it
 
 try
   func = commands[process.argv.2]

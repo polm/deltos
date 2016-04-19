@@ -121,3 +121,20 @@ export read-config = memoize ->
 
 export edit-config = ->
   launch-editor CONFIG
+
+export install-theme = (theme-git-url) ->
+  # clone theme from url into home/theme
+  exec = require(\child_process).exec-sync
+  exec "git clone '#theme-git-url' '#deltos-home/theme'"
+  try
+    fs.mkdir-sync "#deltos-home/site"
+    fs.mkdir-sync "#deltos-home/private"
+  catch
+    \ok # probably already existed, don't worry
+
+  # symlink most files into site/ and private/
+  for file in fs.readdir-sync "#deltos-home/theme"
+    if file == "single.html" then continue
+    if file == "README.md" then continue
+    fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/site/#file"
+    fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/private/#file"

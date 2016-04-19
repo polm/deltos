@@ -43,7 +43,11 @@ build-site-core = (entries, site-root, public-entries, after) ->
 clean-dir = (root, entries) ->
   # anything not in the list of entries should be deleted
   # example case: you un-publish something
-  files = fs.readdir-sync "#{root}/by-id/"
+  try
+    files = fs.readdir-sync "#{root}/by-id/"
+  catch
+    # this can happen if the directory doesn't exist, which means we're done
+    return
 
   #assumption: all files are of the form [id].[something]
   for file in files
@@ -175,7 +179,7 @@ read-entry-body = (entry) ->
   return expanded
 
 get-template = memoize ->
-  fs.read-file-sync (deltos-home + \single.html), \utf-8 |> ->
+  fs.read-file-sync (deltos-home + \theme/single.html), \utf-8 |> ->
     domino.create-window(it).document
 
 searchable-text = ->
