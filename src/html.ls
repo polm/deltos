@@ -4,6 +4,7 @@ markdown = -> Markdown.render it
 {memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
+{render-block, get-slug} = require \./blocks
 
 # placeholder globals; only required as needed
 domino = RSS = eep = Section = {}
@@ -110,44 +111,15 @@ get-rendered-entries = ->
 
 begins-with = (prefix, str) -> str.substr(0, prefix.length) == prefix
 
-read-entry-body = ->
-  raw = it.raw-body
-  expanded = ''
-  if not raw then return '' # it's ok to be empty
-  for line in raw.split "\n"
-    if begins-with \!, line
-      line = line.slice 1 # discard exclamation
-      words = line.split ' '
-      command = words.shift!
-      switch command
-      | \img =>
-        img-src = words.shift!
-        img-tag = "<img src=\"#{img-src}\"/>"
-        caption = if words.length then ('<p class="caption">' + markdown(words.join(' ')).substr 3) else ''
-        line = "<div class=\"img\">" + img-tag + caption + "</div>"
-        # used for meta tags
-        if not it.first-image
-          it.first-image = img-src
-      | \video =>
-        vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
-        caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
-        line = "<div class=\"img\">" + vid-tag + caption + "</div>"
-      # note: this originally had spaces but that causes marked to add a <p> tag :(
-      | \search => line = '<div class="search"><input class="deltos-search" type="text"></input><div class="deltos-results-summary"></div><div class="deltos-results"></div><script src="/search.js"></script></div>'
-      | \archive => line = build-list-page!.join "\n"
-      | \children => line = build-list-page(get-child-entries it).join "\n"
-      | \recent => line = build-list-page!.slice(0, 5).join "\n"
-      | \.rule =>
-          # use the markdown thing and replace the default <p> tag
-          line = '<p class="rule">' + markdown(words.join ' ').substr 3
-      | otherwise => \noop # unknown word, maybe throw error?
-    expanded += line + "\n"
-  expanded = deltos-link-to-html expanded
-  return markdown expanded
+RENDERED_CACHE = {}
+read-entry-body = (entry) ->
+  if RENDERED_CACHE[entry.id] then return RENDERED_CACHE[entry.id]
 
-get-child-entries = (parent) ->
-  out = get-all-entries!.filter(-> -1 != parent.children.index-of it.id)
-  return out
+  expanded = ''
+  for block in entry.raw-body.split "\n\n"
+    expanded += render-block block, entry
+  RENDERED_CACHE[entry.id] = expanded
+  return expanded
 
 get-template = memoize ->
   fs.read-file-sync (deltos-home + \single.html), \utf-8 |> ->
@@ -272,6 +244,3 @@ build-rss = (root, config, entries) ->
      guid: entry.link
 
   fs.write-file-sync (root + "index.rss"), rss.xml!
-
-
-
