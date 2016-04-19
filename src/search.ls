@@ -58,11 +58,6 @@ search = ->
   for entry in out
     rd.append-child make-hit-div entry
 
-
-search-hits = (entry, query) ->
-  if not query or query.length == 0 then return true
-  (new RegExp query, \i).test entry.searchable-text
-
 pointer-handler = ->
   results = document.query-selector-all ".deltos-results .result"
   map results, -> it.class-list.remove \selected
