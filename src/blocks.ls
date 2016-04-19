@@ -86,7 +86,6 @@ build-hierarchical-list = (entries, depth, parent=null) ->
                 .split("\n").map(-> spacer + it).join '\n'
   return out
 
-#TODO this should cache
 embed = (block, entry) ->
   lines = block.split "\n"
   if lines.length > 1 # we have a cache
