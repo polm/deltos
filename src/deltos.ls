@@ -32,6 +32,8 @@ add-command = (name, desc, func) ->
   commands[name] = func
 
 add-command "init", "Set up DELTOS_HOME", init
+add-command "install-theme [git url]", "Install theme", ->
+  install-theme it
 add-command "title", "Show title of current deltos", ->
   console.log read-config!.title
 add-command "config", "Edit config file", edit-config
@@ -70,8 +72,6 @@ add-command \help, "Show this help", ->
     pad = (' ' * (25 - func.command.length))
     console.log "    #{func.command}#pad#{func.desc}"
   process.exit 1
-add-command \install-theme, "Install theme", ->
-  install-theme it
 
 try
   func = commands[process.argv.2]
