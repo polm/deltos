@@ -14,7 +14,8 @@ export render = ->
 export build-private-reference = ->
   root = deltos-home + \private/
   entries = get-all-entries!
-  after = -> fs.write-file-sync (root + \deltos.json), entries-to-json entries
+  after = ->
+    fs.write-file-sync (root + \deltos.json), entries-to-json entries, (root + \deltos.json)
   build-site-core entries, root, entries, after
 
 export build-site = ->
@@ -26,26 +27,78 @@ export build-site = ->
   public-entries = entries.filter -> not tagged \hidden, it
 
   root = deltos-home + \site/
-  after = -> fs.write-file-sync (root + \deltos.json), entries-to-json public-entries
+  after = -> fs.write-file-sync (root + \deltos.json), entries-to-json public-entries, (root + \deltos.json)
   build-site-core entries, root, public-entries, after
 
 build-site-core = (entries, site-root, public-entries, after) ->
   html-init!
+  clean-dir site-root, entries
+  flag-updated site-root, entries
   build-site-html site-root, entries
   if public-entries
     public-entries = public-entries |> sort-by (.date) |> reverse
     build-rss site-root, read-config!, public-entries
   after?!
 
+clean-dir = (root, entries) ->
+  # anything not in the list of entries should be deleted
+  # example case: you un-publish something
+  files = fs.readdir-sync "#{root}/by-id/"
+
+  #assumption: all files are of the form [id].[something]
+  for file in files
+    id = file.split('.').0
+    if entries.filter(-> id == it.id).length < 1
+      fs.unlink-sync "#{root}/by-id/#{file}"
+
+flag-updated = (root, entries) ->
+  for entry in entries
+    # first check: file mtime
+    html-fname = "#{root}/by-id/#{entry.id}.html"
+    if get-mtime(html-fname) < get-mtime(get-filename entry.id)
+      entry.updated = true
+
+  for entry in entries
+    if entry.updated then continue # no point in marking it again
+    # second check: did a child or parent update?
+    if entry.children
+      for child in entries.filter(-> is-in entry.children, it.id)
+        if child.updated then entry.updated = true
+    if entry.parents
+      for parent in entries.filter(-> is-in entry.parents, it.id)
+        if parent.updated then entry.updated = true
+
+get-mtime = (fname) ->
+  try
+    fs.stat-sync(fname).mtime
+  catch # happens if file doesn't exist
+    return 0
+
 export dump-json = ->
   entries = get-rendered-entries! |> sort-by (.date) |> reverse
   entries-to-json entries
 
-entries-to-json = (entries) ->
+entries-to-json = (entries, cache-file) ->
+  cache = {}
+  if cache-file
+    try
+      lines = fs.read-file-sync(cache-file, \utf-8).split "\n"
+      for line in lines
+        if line == '' then continue
+        entry = JSON.parse(line)
+        cache[entry.id] = entry
+    catch e
+      # probably just the file not existing
+      \ok
+
   html-init!
   out = []
   for entry in entries
-    data = build-page-data entry-rules!, entry
+    if cache-file and cache[entry.id] and !entry.updated
+      data = cache[entry.id]
+    else
+      entry.updated = true
+      data = build-page-data entry-rules!, entry
     out.push JSON.stringify data
   return out.join "\n"
 
@@ -61,9 +114,13 @@ build-page-core = (eep, content) ->
   if content.raw-body
     content.body = read-entry-body content
   template = get-template!
-  eep.push template.body, content, template.body
-  if content.title then template.title = content.title
-  add-meta-tags template, content
+  # if the entry has not been updated, this can be skipped
+  if content.updated
+    eep.push template.body, content, template.body
+    if content.title then template.title = content.title
+    add-meta-tags template, content
+  else
+    template = {outerHTML: false}
   return {dom: template, entry: content}
 
 build-page-html = (eep, content) ->
@@ -71,9 +128,7 @@ build-page-html = (eep, content) ->
 
 build-page-data = (eep, content) ->
   # for JSON dump
-  {dom, entry} = build-page-core(eep, content)
-  entry.searchable-text = entry.title + "\n" + dom.query-selector('.content').text-content
-  return entry
+  build-page-core(eep, content).entry
 
 add-meta-tags = (dom, entry) ->
   metadata = get-meta-data dom, entry
@@ -140,74 +195,16 @@ entry-rules = ->
   page.rule \.article-link, \link, {push: link-pusher}
   return page
 
-deltos-link-to-html = ->
-  link-regex = /\.\(([^\/]*)\/\/([^\)]*)\)/g
-  entries = get-all-entries!
-  it.replace link-regex, (matched, label, dest) ->
-    entry = entries.filter(-> it.id == dest).0
-    "<a href=\"/by-id/#{dest}.html\##{get-slug entry}\">#{label}</a>"
-
-get-slug = (entry) ->
-  entry.title.replace(/ /g, '-').replace /[!@#$%^&\*\.\(\)\[\]\/\\'"{}?<>]/g, ''
-
-to-markdown-link = ->
-  tags = it.tags.filter(-> it != \published).join ", "
-  "- [#{it.title}](/by-id/#{it.id}.html\##{get-slug it}) <span class=\"tags\">#{tags}</span>"
-
-build-list-page = (entries) ->
-  if not entries then entries = get-all-entries!
-
-  # remove hidden entries
-  entries = entries
-    .filter (tagged \published)
-    .filter (-> not tagged \hidden, it)
-
-  sort-by (.date), entries |>
-    reverse |>
-    map to-markdown-link
-
-#TODO - what if only some have order? Maybe not worth worrying about.
-sort-order-then-date = (a, b) ->
-  if a?.order and b?.order
-    # for ordering, lower ranks higher
-    if a.order < b.order then return 1 else return -1
-
-  # compare by date - assume dates always differ
-  if a.date > b.date then return -1 else return 1
-
-# parent is an id, depth is depth remaining (so 0==done)
-build-hierarchical-list = (entries, depth, parent=null) ->
-  if depth == 0 then return ''# we're done
-  if parent # we're only interested in children right now
-    children = entries.filter -> it.parents and is-in it.parents, parent
-  else # otherwise we want only top-level items
-    children = entries.filter -> not it.parents
-
-  children = sort-with sort-order-then-date, children
-
-  out = ''
-  spacer = if parent then '  ' else '' # list indentation
-  for child in children
-    out += spacer + (to-markdown-link child) + "\n"
-    if depth > 0
-      out +=  build-hierarchical-list(entries, depth - 1, child.id)
-                .split("\n").map(-> spacer + it).join '\n'
-  return out
-
 build-site-html = (root, entries) ->
   # update individual post html
   for entry in entries
     suffix = "/by-id/#{entry.id}"
 
-    #TODO figure out how to make this work properly
-    # Building only if a file has been updated makes things much faster
-    # however, some files need to rebuilt any time other files change
-    # Examples include the top page and archive
+    # this returns false if the entry does not need updating
+    html = render entry
+    if not html then continue
 
-    #if get-mtime(html-fname) > get-mtime(get-filename entry.id)
-    #  continue
-
-    fs.write-file-sync "#{root}#{suffix}.html", render entry
+    fs.write-file-sync "#{root}#{suffix}.html", html
 
     # write a deltos source file for other people to import
     [head, body] = get-raw-entry entry.id
@@ -216,11 +213,6 @@ build-site-html = (root, entries) ->
     output = (yaml-dump head) + "---\n" + body
     fs.write-file-sync deltos-fname, output
 
-get-mtime = (fname) ->
-  try
-    fs.stat-sync(fname).mtime
-  catch # happens if file doesn't exist
-    return 0
 
 build-rss = (root, config, entries) ->
   rss = new RSS {
