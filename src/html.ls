@@ -226,6 +226,7 @@ build-rss = (root, config, entries) ->
     site_url: config.url
     feed_url: config.url + "/index.rss"
     pubDate: new Date!
+    author: config.author
   }
 
   for entry in entries
