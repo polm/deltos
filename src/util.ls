@@ -128,7 +128,9 @@ export install-theme = (theme-git-url) ->
   exec "git clone '#theme-git-url' '#deltos-home/theme'"
   try
     fs.mkdir-sync "#deltos-home/site"
+    fs.mkdir-sync "#deltos-home/site/by-id"
     fs.mkdir-sync "#deltos-home/private"
+    fs.mkdir-sync "#deltos-home/private/by-id"
   catch
     \ok # probably already existed, don't worry
 
