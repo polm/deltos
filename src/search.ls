@@ -62,8 +62,9 @@ search = ->
   input.hits = results.length
 
   out = results.slice input.offset, input.offset + WINDOW
-  summary.innerHTML = "Showing #{input.offset + 1} to #{input.offset + out.length} of #{results.length} hits"
-  for entry in out
+
+  summary.innerHTML = "#{results.length} hits"
+  for entry in results
     rd.append-child make-hit-div entry
 
 pointer-handler = ->
@@ -79,28 +80,26 @@ pointer-handler = ->
   # page up/down change the offset
   | 33, 34 =>
     if it.key-code == 33
-      this.offset = Math.max 0, this.offset - WINDOW
+      this.pointer = Math.max -1, this.pointer - WINDOW # up
     if it.key-code == 34
-      this.offset = Math.min (WINDOW * ~~(this.hits / WINDOW)), this.offset + WINDOW
-    re-render!
+      this.pointer = Math.min (results.length - 1), this.pointer + WINDOW # down
+    event.prevent-default!
   # arrow up/down change the selected item
   | 38 =>
-    if this.pointer == 0 and this.offset > 0
-      this.offset -= WINDOW
-      this.pointer = WINDOW
-      re-render!
     this.pointer = Math.max -1, this.pointer - 1 # up
   | 40 =>
-    if this.pointer + 1 == WINDOW and this.offset + WINDOW < this.hits
-      this.offset += WINDOW
-      this.pointer = -1
-      re-render!
-    this.pointer = Math.min (WINDOW - 1), this.pointer + 1
+    this.pointer = Math.min (results.length - 1), this.pointer + 1
   | 13 => # enter selects current
     if this.pointer > -1 and this.pointer < results.length
       document.location = results[this.pointer].href
   default \ok
-  results[this.pointer]?.class-list.add \selected
+  selected = results[this.pointer]
+  if selected
+    console.log selected
+    console.log selected.parent-element
+    selected.class-list.add \selected
+    grand = selected.parent-element.parent-element
+    grand.scroll-top = selected.offset-top - grand.offset-top
 
 input = document.query-selector \.deltos-search
 input.pointer = -1
