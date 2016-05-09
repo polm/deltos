@@ -50,6 +50,14 @@ search = ->
   summary = document.query-selector \.deltos-results-summary
   rd.innerHTML = ''
   query = input.value.to-lower-case!
+
+  # if the query changed, reset state
+  if input.previous != query
+    input.offset = 0
+    input.pointer = -1
+    input.previous = query
+    console.log "query: #query"
+
   results = philtre query, entries
   input.hits = results.length
 
@@ -98,6 +106,7 @@ input = document.query-selector \.deltos-search
 input.pointer = -1
 input.offset = 0
 input.hits = 0
+input.previous = ''
 input.onkeydown = pointer-handler
 input.focus!
 
