@@ -236,6 +236,6 @@ build-rss = (root, config, entries) ->
      description: entry.body
      categories: entry.tags
      url: entry.link
-     guid: entry.link
+     guid: entry.link.split('#').0
 
   fs.write-file-sync (root + "index.rss"), rss.xml!
