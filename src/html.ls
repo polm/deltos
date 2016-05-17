@@ -229,7 +229,7 @@ build-rss = (root, config, entries) ->
     author: config.author
   }
 
-  for entry in entries
+  for entry in entries.slice 0, 5
    rss.item do
      title: entry.title
      date: entry.date
