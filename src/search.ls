@@ -36,7 +36,7 @@ make-embed = (entry) ->
     url = entry.image
     # use small thumbnail if we've got imgur
     # A more general solution would be nice...
-    if /imgur.com/.test entry.image
+    if /imgur.com.*l..../.test entry.image
       url = (url.substr 0, (url.length - 5)) + \s.jpg
     out += "style=\"background-image: url(#{url})\""
   out += "></div>"
