@@ -58,7 +58,8 @@ build-list-page = (entries) ->
 
 to-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
-  "- [#{it.title}](/by-id/#{it.id}.html\##{get-slug it}) <span class=\"tags\">#{tags}</span>"
+  day = it.date.substr 0, 10
+  "- [#{it.title}](/by-id/#{it.id}.html\##{get-slug it}) #day <span class=\"tags\">#{tags}</span>"
 
 #TODO - what if only some have order? Maybe not worth worrying about.
 sort-order-then-date = (a, b) ->
