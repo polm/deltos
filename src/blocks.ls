@@ -101,15 +101,21 @@ blocks.embed = (block, entry) ->
   fs.write-file-sync fname, raw-file, \utf-8
   return result
 
-#TODO make generating this automatic
-blockmap =
-  img: img
-  video: video
-  search: search
-  archive: archive
-  children: children
-  recent: recent
-  embed: embed
+blocks.big = (block, entry) ->
+  lines = block.split '\n'
+  lines.shift! # we don't care about the first
+  out = '<div class="bigholder">'
+  for line in lines
+    out += '<span class="bigtext">' + line + '</span>'
+  out += '</div>'
+  return out
+
+blocks.class = (block, entry) ->
+  style = block.split("\n").0.split(' ').1 # first word after "class" is value to use
+  body = block.split("\n").slice(1).join("\n")
+  # render body as normal, but change p tag to have class
+  # assume <p> tag
+  out = "<p class=\"#style\">" + (markdown deltos-link-to-html body).slice 3
 
 deltos-link-to-html = ->
   link-regex = /\.\(([^\/]*)\/\/([^\)]*)\)/g
