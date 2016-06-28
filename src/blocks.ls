@@ -7,7 +7,9 @@ markdown = -> Markdown.render it
 {is-in, tagged, get-filename} = require \./util
 fs = require \fs
 
-img = (block, entry) ->
+blocks = {}
+
+blocks.img = (block, entry) ->
   words = block.split(' ')
   words.shift!
   img-src = words.shift!
@@ -18,27 +20,27 @@ img = (block, entry) ->
     entry.first-image = img-src
   return "<div class=\"img\">" + tag + caption + "</div>"
 
-video = (block, entry) ->
+blocks.video = (block, entry) ->
   words = block.split(' ')
   words.shift!
   vid-tag = """<video preload="auto" autoplay="autoplay" loop="loop" style="width: 100%; height: auto;" controls> <source src="#{words.shift!}" type='video/webm; codecs="vp8, vorbis"'></source> </video>"""
   caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
   return "<div class=\"img\">" + vid-tag + caption + "</div>"
 
-search = (block, entry) ->
+blocks.search = (block, entry) ->
   return '<div class="search"><input class="deltos-search" type="text"></input><div class="deltos-results-summary"></div><div class="deltos-results"></div><script src="/search.js"></script></div>'
 
-archive = (block, entry) ->
+blocks.archive = (block, entry) ->
   entry.updated = true
   markdown build-list-page!.join "\n"
 
-children = (block, entry) ->
-  markdown build-list-page(get-child-entries entry).join "\n"
+blocks.children = (block, entry) ->
+  build-list-page(get-child-entries entry).join "\n"
 
 get-child-entries = (parent) ->
   get-all-entries!.filter(-> -1 != parent.children.index-of it.id)
 
-recent = (block, entry) ->
+blocks.recent = (block, entry) ->
   entry.updated = true
   markdown build-list-page!.slice(0, 5).join "\n"
 
@@ -86,7 +88,7 @@ build-hierarchical-list = (entries, depth, parent=null) ->
                 .split("\n").map(-> spacer + it).join '\n'
   return out
 
-embed = (block, entry) ->
+blocks.embed = (block, entry) ->
   lines = block.split "\n"
   if lines.length > 1 # we have a cache
     return lines.slice(1).join '\n'
@@ -121,7 +123,7 @@ export get-slug = (entry) ->
 #TODO give this a better name
 process-block = (keyword, block, entry) ->
   try
-    blockmap[keyword] block, entry
+    blocks[keyword] block, entry
   catch e
     console.log "keyword: " + keyword
     throw e
