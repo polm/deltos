@@ -41,6 +41,10 @@ export tagged = (tag, entry) --> (not tag) or is-in entry.tags, tag
 
 export no-empty = -> it.filter (-> not (it == null or it == '') )
 
+# get a url-safe form of the title
+export get-slug = (entry) ->
+  entry.title.replace(/ /g, '-').replace /[!@#$%^&\*\.\(\)\[\]\/\\'"{}?<>]/g, ''
+
 export local-iso-time = (vsnow=0) ->
   # from here: http://stackoverflow.com/questions/10830357/javascript-toisostring-ignores-timezone-offset
   # Idea is to take a date, add our offset, get that as Z/UTC time, then just change the tz note

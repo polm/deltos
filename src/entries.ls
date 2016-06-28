@@ -1,5 +1,5 @@
 {memoize, local-iso-time, get-yesterday, yaml, yaml-dump, \
- deltos-home, BASEDIR, get-filename, tagged} = require \./util
+ deltos-home, BASEDIR, get-filename, tagged, get-slug} = require \./util
 fs = require \fs
 uuid = require \node-uuid
 {filter, values, sort-by, reverse} = require \prelude-ls

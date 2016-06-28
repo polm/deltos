@@ -1,8 +1,8 @@
 fs = require \fs
-{memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename} = require \./util
+{memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
-{render-block, get-slug} = require \./blocks
+{render-block} = require \./blocks
 
 # placeholder globals; only required as needed
 domino = RSS = eep = Section = {}

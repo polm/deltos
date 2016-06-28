@@ -4,7 +4,7 @@ Markdown = require(\markdown-it)(html: true)
 markdown = -> Markdown.render it
 {get-all-entries} = require \./entries
 {map, sort-by, sort-with, reverse} = require \prelude-ls
-{is-in, tagged, get-filename} = require \./util
+{is-in, tagged, get-filename, get-slug} = require \./util
 fs = require \fs
 
 blocks = {}
@@ -116,9 +116,6 @@ deltos-link-to-html = ->
   it.replace link-regex, (matched, label, dest) ->
     entry = entries.filter(-> it.id == dest).0
     "<a href=\"/by-id/#{dest}.html\##{get-slug entry}\">#{label}</a>"
-
-export get-slug = (entry) ->
-  entry.title.replace(/ /g, '-').replace /[!@#$%^&\*\.\(\)\[\]\/\\'"{}?<>]/g, ''
 
 #TODO give this a better name
 process-block = (keyword, block, entry) ->
