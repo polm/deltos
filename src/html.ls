@@ -4,6 +4,11 @@ fs = require \fs
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 {render-block} = require \./blocks
 
+Markdown = require(\markdown-it)(html: true)
+             .use require \markdown-it-footnote
+             .use require \markdown-it-highlightjs
+markdown = -> Markdown.render it
+
 # placeholder globals; only required as needed
 domino = RSS = eep = Section = {}
 
@@ -174,7 +179,8 @@ read-entry-body = (entry) ->
 
   expanded = ''
   for block in entry.raw-body.split "\n\n"
-    expanded += render-block block, entry
+    expanded += "\n\n" + render-block block, entry
+  expanded = markdown expanded
   RENDERED_CACHE[entry.id] = expanded
   return expanded
 

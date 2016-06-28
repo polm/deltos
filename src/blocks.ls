@@ -32,7 +32,7 @@ blocks.search = (block, entry) ->
 
 blocks.archive = (block, entry) ->
   entry.updated = true
-  markdown build-list-page!.join "\n"
+  build-list-page!.join "\n"
 
 blocks.children = (block, entry) ->
   build-list-page(get-child-entries entry).join "\n"
@@ -42,7 +42,7 @@ get-child-entries = (parent) ->
 
 blocks.recent = (block, entry) ->
   entry.updated = true
-  markdown build-list-page!.slice(0, 5).join "\n"
+  build-list-page!.slice(0, 5).join "\n"
 
 build-list-page = (entries) ->
   if not entries then entries = get-all-entries!
@@ -134,5 +134,5 @@ export render-block = (block, entry) ->
     keyword = block.split("\n").0.split(' ').0 # get first word
     return process-block keyword, block, entry
   else # default block
-    return markdown deltos-link-to-html block
+    return deltos-link-to-html block
 
