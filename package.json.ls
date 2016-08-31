@@ -23,7 +23,7 @@ dependencies:
   rss: \^1.0.0
   mkdirp: \^0.5.1
   searchy: \^0.0.19
-  philtre: \^0.0.7
+  philtre: \^1.0.1
 
 dev-dependencies:
   livescript: \^1.4.0
