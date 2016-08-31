@@ -32,13 +32,14 @@ make-embed = (entry) ->
   out = "<a class=\"result\" href=\"#{entry.link}\">"
   out += '<div class="summary-small">'
   out +='<div class=\"imgwrapper\" '
-  if entry.image
-    url = entry.image
-    # use small thumbnail if we've got imgur
-    # A more general solution would be nice...
-    if /imgur.com.*l..../.test entry.image
-      url = (url.substr 0, (url.length - 5)) + \s.jpg
-    out += "style=\"background-image: url(#{url})\""
+
+  # images with relative urls are assumed to have thumbnails in a 'thumbs' dir
+  # non-relative urls just use full-size images scaled down
+  url = entry.image
+  if entry.image and not entry.image.match 'https?://'
+    parts = entry.image.split('/')
+    url = parts[0 to -2].join('/') + '/thumbs/' + parts[*-1]
+  out += "style=\"background-image: url(#{url})\""
   out += "></div>"
   out += "<h2>#{entry.title}</h2>"
   out += "<p>#{entry.description}</p>"
@@ -56,7 +57,6 @@ search = ->
     input.offset = 0
     input.pointer = -1
     input.previous = query
-    console.log "query: #query"
 
   results = philtre query, entries
   input.hits = results.length

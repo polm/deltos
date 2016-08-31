@@ -140,6 +140,9 @@ build-page-data = (eep, content) ->
   build-page-core(eep, content).entry
 
 add-meta-tags = (dom, entry) ->
+  # some opengraph consumers (like Twitter) can't use relative image paths
+  if entry.first-image and 'http' != entry.first-image.substr 0, 4
+    entry.first-image = read-config!.url + entry.first-image
   metadata = get-meta-data dom, entry
   for key in <[ title description image ]>
     set-meta dom, "og:#key", metadata[key]
