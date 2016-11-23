@@ -12,15 +12,15 @@
   "bugs": "http://github.com/polm/deltos/issues",
   "license": "WTFPL",
   "dependencies": {
+    "domino": "^1.0.19",
     "js-yaml": "^3.2.2",
     "markdown-it": "^6.0.0",
-    "node-uuid": "^1.4.1",
-    "prelude-ls": "^1.1.1",
-    "domino": "^1.0.19",
-    "rss": "^1.0.0",
     "mkdirp": "^0.5.1",
+    "philtre": "^0.0.7",
+    "prelude-ls": "^1.1.1",
+    "rss": "^1.0.0",
     "searchy": "^0.0.19",
-    "philtre": "^0.0.7"
+    "uuid": "^3.0.0"
   },
   "devDependencies": {
     "livescript": "^1.4.0"
