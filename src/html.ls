@@ -122,7 +122,7 @@ build-page-core = (eep, content) ->
   # This builds a whole page with <head> etc.
   if content.raw-body
     content.body = read-entry-body content
-  template = get-template!
+  template = get-template content.template
   # if the entry has not been updated, this can be skipped
   if content.updated
     eep.push template.body, content, template.body
@@ -192,8 +192,8 @@ read-entry-body = (entry) ->
   RENDERED_CACHE[entry.id] = expanded
   return expanded
 
-get-template = memoize ->
-  fs.read-file-sync (deltos-home + \theme/single.html), \utf-8 |> ->
+get-template = memoize (template="single") ->
+  fs.read-file-sync (deltos-home + "theme/#{template}.html"), \utf-8 |> ->
     domino.create-window(it).document
 
 searchable-text = ->

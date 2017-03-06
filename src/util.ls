@@ -26,13 +26,13 @@ export yaml-dump = ->
   # as with reading, we only expect strings
   Yaml.safe-dump it, schema: Yaml.FAILSAFE_SCHEMA, flow-level: 1
 
-# simple memoizer for thunks
+# simple memoizer for one-argument functions or thunks
 export memoize = (func) ->
-  output = null
+  output = {}
   return ->
-    if output then return output
-    output := func!
-    return output
+    if output[it] != undefined then return output[it]
+    output[it] = func it
+    return output[it]
 
 export is-in = (list, item) --> -1 < list.index-of item
 
