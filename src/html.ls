@@ -224,6 +224,9 @@ build-site-html = (root, entries) ->
 
     fs.write-file-sync "#{root}#{suffix}.html", html
 
+    if entry.slug # for fixed names
+      fs.symlink-sync "#{root}#{suffix}.html", "#{root}/#{entry.slug}.html"
+
     # write a deltos source file for other people to import
     [head, body] = get-raw-entry entry.id
     head.source = "#{read-config!.url}#{suffix}.html"
