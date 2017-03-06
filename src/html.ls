@@ -142,6 +142,11 @@ build-page-data = (eep, content) ->
 add-meta-tags = (dom, entry) ->
   # some opengraph consumers (like Twitter) can't use relative image paths
   if entry.first-image and 'http' != entry.first-image.substr 0, 4
+    parts = entry.first-image.split '/'
+    fname = parts[*-1]
+    ftype = fname.split('.')[*-1]
+    path = parts[0 til -1].join '/'
+    entry.thumbnail = read-config!.url + path + '/' + (fname.substr 0, (fname.length - 6)) + '.s.' + ftype
     entry.first-image = read-config!.url + entry.first-image
   metadata = get-meta-data dom, entry
   for key in <[ title description image ]>

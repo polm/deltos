@@ -3,6 +3,7 @@
 WINDOW = 5 # max entries to show at once
 
 {philtre} = require \philtre
+URL = require \url
 
 map = (list, func) ->
   # for nodelists
@@ -33,12 +34,13 @@ make-embed = (entry) ->
   out += '<div class="summary-small">'
   out +='<div class=\"imgwrapper\" '
 
-  # images with relative urls are assumed to have thumbnails in a 'thumbs' dir
-  # non-relative urls just use full-size images scaled down
+  # If we have a special thumbnail url, use it
+  # if not just use the full-size image
+  # not good for slow connections, but fine as a fallback
+  # The default here is already assigned when calculating metadata
   url = entry.image
-  if entry.image and not entry.image.match 'https?://'
-    parts = entry.image.split('/')
-    url = parts[0 to -2].join('/') + '/thumbs/' + parts[*-1]
+  if entry.thumbnail
+    url = URL.parse(entry.thumbnail).path
   out += "style=\"background-image: url(#{url})\""
   out += "></div>"
   out += "<h2>#{entry.title}</h2>"
