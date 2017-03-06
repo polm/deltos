@@ -125,7 +125,7 @@ get-entry-parts = ->
   body = text.split("\n---\n")[1 to].join "\n---\n"
   return [head, body]
 
-get-new-id = ->
+export get-new-id = (fname-getter=get-filename) ->
   # get a new uuid
   # check it doesn't exist; if it does, make another
   while true
@@ -133,7 +133,7 @@ get-new-id = ->
     # don't need the whole thing; this'll do for now
     # smallest bits are most random, so let's use those
     id = id.split('').reverse![0 til 8].join ''
-    fname = get-filename id
+    fname = fname-getter id
     if not fs.exists-sync fname
       return id
 

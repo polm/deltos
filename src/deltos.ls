@@ -57,6 +57,19 @@ add-command "render [id]", "Render [id] as HTML", ->
 add-command \build-site, "Build static HTML", ->
   build-private-reference!
   build-site!
+add-command \add-image, "Add an image to the store", (fname) ->
+  # TODO move this to util or something
+  imgdir = deltos-home + '/img/'
+  ftype = fname.split('.')[*-1] # should be png, jpg, etc.
+  {get-new-id} = require \./entries
+  base = get-new-id -> imgdir + it
+  fs.write-file-sync (imgdir + base), '' # prevents re-use later
+  fs.write-file-sync (imgdir + base + '.o.' + ftype), fs.read-file-sync fname # save a copy
+  exec = require('child_process').exec-sync
+  exec "convert \"#fname\" -resize 640x1000 #imgdir/#base.l.#ftype"
+  exec "convert \"#fname\" -gravity center -resize '90x90^' -crop 90x90+0+0 #imgdir/#base.s.#ftype"
+  console.log "Created resized image and thumbnail. Use the URL below in a note:"
+  console.log "/img/#base.l.#ftype"
 add-command \json, "Dump all entries to JSON", ->
   console.log dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
