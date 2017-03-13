@@ -4,7 +4,8 @@ Markdown = require(\markdown-it)(html: true)
 markdown = -> Markdown.render it
 {get-all-entries} = require \./entries
 {map, sort-by, sort-with, reverse} = require \prelude-ls
-{is-in, tagged, get-filename, get-slug} = require \./util
+{read-config, is-in, tagged, get-filename, get-slug} = require \./util
+width = read-config!.width or 500
 fs = require \fs
 
 blocks = {}
@@ -94,7 +95,7 @@ blocks.embed = (block, entry) ->
   if lines.length > 1 # we have a cache
     return lines.slice(1).join '\n'
   url = lines.0.split(' ').slice(1).join ' '
-  result = child_process.exec-sync "kinkan '#url'"
+  result = child_process.exec-sync "OEMBED_WIDTH=#width kinkan '#url'"
   fname = get-filename entry.id
   raw-file = fs.read-file-sync fname, \utf-8
   raw-file = raw-file.split(lines.0).join(lines.0 + "\n" + result)
