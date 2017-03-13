@@ -36,7 +36,7 @@ blocks.search = (block, entry) ->
 
 blocks.archive = (block, entry) ->
   entry.updated = true
-  build-list-page!.join "\n"
+  build-image-list-page!.join "\n"
 
 blocks.children = (block, entry) ->
   build-list-page(get-child-entries entry).join "\n"
@@ -46,9 +46,9 @@ get-child-entries = (parent) ->
 
 blocks.recent = (block, entry) ->
   entry.updated = true
-  build-list-page!.slice(0, 5).join "\n"
+  build-image-list-page!.slice(0, 5).join "\n"
 
-build-list-page = (entries) ->
+build-list-page = (entries, linker=to-markdown-link) ->
   if not entries then entries = get-all-entries!
 
   # remove hidden entries
@@ -58,12 +58,24 @@ build-list-page = (entries) ->
 
   sort-by (.date), entries |>
     reverse |>
-    map to-markdown-link
+    map linker
+
+build-image-list-page = (entries) ->
+  build-list-page entries, to-image-block
 
 to-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
   day = it.date.substr 0, 10
   "- [#{it.title}](/by-id/#{it.id}.html\##{get-slug it}) #day <span class=\"tags\">#{tags}</span>"
+
+to-image-block = ->
+  out = "<a href=\"/by-id/#{it.id}.html\">"
+  out += '<div class="img img-block">'
+  if it.first-image
+    out += "<img src=\"#{it.first-image}\">"
+  out += "<div class=\"text-overlay\">#{it.title}</div>"
+  out += "</div></a>"
+  return out
 
 #TODO - what if only some have order? Maybe not worth worrying about.
 sort-order-then-date = (a, b) ->
