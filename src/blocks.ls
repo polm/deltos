@@ -19,6 +19,9 @@ blocks.img = (block, entry) ->
   # for meta-tags
   if not entry.first-image
     entry.first-image = img-src
+    if entry.first-image.split('.')[*-2] == 'l'
+      # use our cropped image
+      entry.first-image = entry.first-image.split('.l.').join '.c.'
   return "<div class=\"img\">" + tag + caption + "</div>"
 
 blocks.video = (block, entry) ->

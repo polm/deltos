@@ -141,20 +141,20 @@ build-page-data = (eep, content) ->
 
 add-meta-tags = (dom, entry) ->
   # some opengraph consumers (like Twitter) can't use relative image paths
-  if entry.first-image and 'http' != entry.first-image.substr 0, 4
+  if entry.first-image and not entry.meta-image
     parts = entry.first-image.split '/'
     fname = parts[*-1]
     ftype = fname.split('.')[*-1]
     path = parts[0 til -1].join '/'
     entry.thumbnail = read-config!.url + path + '/' + (fname.substr 0, (fname.length - 6)) + '.s.' + ftype
-    entry.first-image = read-config!.url + entry.first-image
+    entry.meta-image = read-config!.url + entry.first-image
   metadata = get-meta-data dom, entry
   for key in <[ title description image ]>
     set-meta dom, "og:#key", metadata[key]
     entry[key] = metadata[key]
   # Twitter's summary_large_image looks better when an image is available,
   # but looks horrible with small logos, so adjust accordingly
-  card-type = if entry.first-image then \summary_large_image else \summary
+  card-type = if entry.meta-image then \summary_large_image else \summary
   set-meta dom, \twitter:card, card-type
 
 default-image = (dom) ->
@@ -170,7 +170,7 @@ get-meta-data = (dom, entry) ->
   # while it's a little weird, this is data for meta-tags rather than generic "metadata"
   title: entry.title
   description: dom.query-selector(\p)?.text-content.split("\n").join ' '
-  image: (entry.first-image or default-image dom)
+  image: (entry.meta-image or default-image dom)
 
 get-rendered-entries = ->
   # This just builds a body
