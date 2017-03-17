@@ -56,18 +56,12 @@ add-command \build-site, "Build static HTML", ->
   build-private-reference!
   build-site!
 add-command \clean, "Delete built HTML etc.", ->
-  fs = require \fs
+  fs = require \fs-extra
   dirs = [deltos-home + '/site/by-id/',
           deltos-home + '/private/by-id/']
   for dir in dirs
     for fname in fs.readdir-sync dir
-      fs.unlink-sync dir + fname
-add-command \add-image, "Add an image to the store", (...args) ->
-  {add-image} = require \./image
-  add-image ...args
-add-command \regenerate-images, "Destroy and regenerate resized images.", ->
-  {regenerate-image} = require \./image
-  regenerate-images!
+      fs.remove-sync dir + fname
 add-command \json, "Dump all entries to JSON", ->
   {dump-json} = require \./html
   console.log dump-json!

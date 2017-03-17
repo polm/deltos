@@ -1,4 +1,4 @@
-fs = require \fs
+fs = require \fs-extra
 {memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
@@ -13,7 +13,7 @@ markdown = -> Markdown.render it
 domino = RSS = eep = Section = {}
 
 export render = ->
-  it.link = '/by-id/' + it.id + \.html + "#" + get-slug it
+  it.link = '/by-id/' + it.id + \/ + "#" + get-slug it
   build-page-html entry-rules!, it
 
 export build-private-reference = ->
@@ -58,13 +58,15 @@ clean-dir = (root, entries) ->
   for file in files
     id = file.split('.').0
     if entries.filter(-> id == it.id).length < 1
-      fs.unlink-sync "#{root}/by-id/#{file}"
+      fs.remove-sync "#{root}/by-id/#{file}"
 
 flag-updated = (root, entries) ->
   for entry in entries
     # first check: file mtime
-    html-fname = "#{root}/by-id/#{entry.id}.html"
-    if get-mtime(html-fname) < get-mtime(get-filename entry.id)
+    html-fname = "#{root}/by-id/#{entry.id}/index.html"
+    if get-mtime(html-fname) < get-mtime get-filename(entry.id) + '/meta'
+      entry.updated = true
+    if get-mtime(html-fname) < get-mtime get-filename(entry.id) + '/deltos'
       entry.updated = true
 
   for entry in entries
@@ -224,18 +226,24 @@ build-site-html = (root, entries) ->
     html = render entry
     if not html then continue
 
-    fs.write-file-sync "#{root}#{suffix}.html", html
+    fs.mkdirp-sync "#{root}#{suffix}"
+    fs.write-file-sync "#{root}#{suffix}/index.html", html
 
     if entry.slug # for fixed names
-      fs.symlink-sync "#{root}#{suffix}.html", "#{root}/#{entry.slug}.html"
+      # have to symlink to a file (rather than dir) here so that the root index.html works
+      fs.remove-sync "#{root}/#{entry.slug}.html"
+      fs.symlink-sync "#{root}#{suffix}/index.html", "#{root}/#{entry.slug}.html"
 
     # write a deltos source file for other people to import
     [head, body] = get-raw-entry entry.id
-    head.source = "#{read-config!.url}#{suffix}.html"
-    deltos-fname = "#{root}#{suffix}.deltos"
-    output = (yaml-dump head) + "---\n" + body
-    fs.write-file-sync deltos-fname, output
+    head.source = "#{read-config!.url}#{suffix}/index.html"
 
+    orig = get-filename(entry.id)
+
+    # this will get the meta and deltos files + others
+    for fname in fs.readdir-sync orig
+      fs.remove-sync "#{root}#{suffix}/#fname"
+      fs.symlink-sync orig + '/' + fname, "#{root}#{suffix}/#fname"
 
 build-rss = (root, config, entries) ->
   rss = new RSS {

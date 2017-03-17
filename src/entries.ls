@@ -13,7 +13,9 @@ export new-note = (title="", tags=[], metadata={}) ->
   for key of metadata
     base[key] = metadata[key]
   fname = get-filename base.id
-  fs.write-file-sync fname, (yaml-dump base) + "---\n"
+  fs.mkdir-sync fname
+  fs.write-file-sync fname + '/meta', (yaml-dump base)
+  fs.write-file-sync fname + '/deltos', \...
   # finally print the name so it can be used
   return fname
 
@@ -57,9 +59,9 @@ export philtre-entries = (query) ->
   return out
 
 read-entry = (id) ->
-  raw-text = fs.read-file-sync get-filename(id), \utf-8
   try
-    [header, body] = raw-text.split "\n---\n"
+    header = fs.read-file-sync get-filename(id) + '/meta', \utf-8
+    body = fs.read-file-sync get-filename(id) + '/deltos', \utf-8
     metadata = yaml header
   catch e
     console.error "Error parsing YAML header:\n" + header
@@ -120,10 +122,8 @@ export get-raw-entry = ->
   return [(yaml head), body]
 
 get-entry-parts = ->
-  text = fs.read-file-sync (get-filename it), \utf-8
-  parts = text.split "\n---\n"
-  head = parts.0
-  body = parts[1 to].join "\n---\n"
+  head = fs.read-file-sync (get-filename it) + \/meta, \utf-8
+  body = fs.read-file-sync (get-filename it) + \/deltos, \utf-8
   return [head, body]
 
 export get-new-id = (fname-getter=get-filename) ->
