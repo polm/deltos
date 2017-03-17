@@ -4,16 +4,25 @@ Markdown = require(\markdown-it)(html: true)
 markdown = -> Markdown.render it
 {get-all-entries} = require \./entries
 {map, sort-by, sort-with, reverse} = require \prelude-ls
-{read-config, is-in, tagged, get-filename, get-slug} = require \./util
+{deltos-home, read-config, is-in, tagged, get-filename, get-slug} = require \./util
 width = read-config!.width or 500
-fs = require \fs
+fs = require \fs-extra
 
 blocks = {}
 
 blocks.img = (block, entry) ->
   words = block.split(' ')
   words.shift!
-  img-src = words.shift!
+  img-src = words.shift!trim!
+
+  #TMP - copy images to the posts where they are used
+  parts = img-src.split('.')
+  parts[*-2] = 'o'
+  img-src = parts.join('.')
+  fname = img-src.split('/')[*-1]
+
+  fs.copy-sync deltos-home + img-src, get-filename(entry.id) + '/' + fname
+
   tag = "<img src=\"#{img-src}\"/>"
   caption = if words.length then ('<p class="caption">' + markdown(words.join(' ')).substr 3) else ''
   # for meta-tags
