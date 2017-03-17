@@ -1,7 +1,4 @@
 {launch-editor, deltos-home, get-filename, read-config, edit-config, install-theme} = require \./util
-{add-image, regenerate-images} = require \./image
-fs = require \fs
-
 process.title = \deltos
 
 # Top-level commands - these are called more or less directly by the command line
@@ -19,8 +16,6 @@ init = ->
 write-daily = -> launch-editor new-daily!
 write-post = -> launch-editor new-note it
 edit-post = -> launch-editor it
-
-{render, build-site, build-private-reference, dump-json} = require \./html
 
 # Actually handling command line arguments
 
@@ -54,19 +49,27 @@ add-command "grep [pattern]", "Grep body of notes", (pat) ->
 add-command "philtre [query]", "Philtre notes", (query) ->
   philtre-entries(query).map -> console.log it
 add-command "render [id]", "Render [id] as HTML", ->
+  {render} = require \./html
   console.log render it
 add-command \build-site, "Build static HTML", ->
+  {build-site, build-private-reference} = require \./html
   build-private-reference!
   build-site!
 add-command \clean, "Delete built HTML etc.", ->
+  fs = require \fs
   dirs = [deltos-home + '/site/by-id/',
           deltos-home + '/private/by-id/']
   for dir in dirs
     for fname in fs.readdir-sync dir
       fs.unlink-sync dir + fname
-add-command \add-image, "Add an image to the store", add-image
-add-command \regenerate-images, "Destroy and regenerate resized images.", regenerate-images
+add-command \add-image, "Add an image to the store", (...args) ->
+  {add-image} = require \./image
+  add-image ...args
+add-command \regenerate-images, "Destroy and regenerate resized images.", ->
+  {regenerate-image} = require \./image
+  regenerate-images!
 add-command \json, "Dump all entries to JSON", ->
+  {dump-json} = require \./html
   console.log dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
 add-command \tagged,  "Dump TSV for posts with tag", ->
@@ -91,4 +94,3 @@ if not func
   func = commands.help
 
 func.apply null, process.argv.slice 3
-

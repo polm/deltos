@@ -121,8 +121,9 @@ export get-raw-entry = ->
 
 get-entry-parts = ->
   text = fs.read-file-sync (get-filename it), \utf-8
-  head = text.split("\n---\n").0
-  body = text.split("\n---\n")[1 to].join "\n---\n"
+  parts = text.split "\n---\n"
+  head = parts.0
+  body = parts[1 to].join "\n---\n"
   return [head, body]
 
 export get-new-id = (fname-getter=get-filename) ->
