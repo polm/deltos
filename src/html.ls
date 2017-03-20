@@ -1,5 +1,5 @@
 fs = require \fs-extra
-{memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
+{get-mtime, memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 {render-block} = require \./blocks
@@ -78,12 +78,6 @@ flag-updated = (root, entries) ->
     if entry.parents
       for parent in entries.filter(-> is-in entry.parents, it.id)
         if parent.updated then entry.updated = true
-
-get-mtime = (fname) ->
-  try
-    fs.stat-sync(fname).mtime
-  catch # happens if file doesn't exist
-    return 0
 
 export dump-json = ->
   entries = get-rendered-entries! |> sort-by (.date) |> reverse

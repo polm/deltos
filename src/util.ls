@@ -144,3 +144,11 @@ export install-theme = (theme-git-url) ->
     if file == "README.md" then continue
     fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/site/#file"
     fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/private/#file"
+
+
+export get-mtime = (fname) ->
+  try
+    fs.stat-sync(fname).mtime
+  catch # happens if file doesn't exist
+    return 0
+
