@@ -163,6 +163,7 @@ process-block = (keyword, block, entry) ->
   try
     blocks[keyword] block, entry
   catch e
+    # TODO: render this error in the html
     console.log "keyword: " + keyword
     throw e
 
