@@ -22,13 +22,14 @@ blocks.img = (block, entry) ->
 
   thumbroot = get-filename(entry.id) + '/img/'
   img-src = "/by-id/#{entry.id}/img/#fname.l.#ftype"
+  big-src = "/by-id/#{entry.id}/#fname"
 
   if not fs.exists-sync thumbroot + fname + '.l.' + ftype
     # this is done for every image
     fs.mkdirp thumbroot
     exec "convert \"#src-file\" -resize #{width}x1000 #thumbroot/#fname.l.#ftype"
 
-  tag = "<img src=\"#{img-src}\"/>"
+  tag = "<a href=\"#{big-src}\"><img src=\"#{img-src}\"/></a>"
   caption = if words.length then ('<p class="caption">' + markdown(words.join(' ')).substr 3) else ''
   # for meta-tags
   if not entry.first-image
