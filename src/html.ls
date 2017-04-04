@@ -59,8 +59,6 @@ flag-updated = (root, entries) ->
   for entry in entries
     # first check: file mtime
     html-fname = "#{root}/by-id/#{entry.id}/index.html"
-    if get-mtime(html-fname) < get-mtime get-filename(entry.id) + '/meta'
-      entry.updated = true
     if get-mtime(html-fname) < get-mtime get-filename(entry.id) + '/deltos'
       entry.updated = true
 

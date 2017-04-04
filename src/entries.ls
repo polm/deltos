@@ -14,8 +14,7 @@ export new-note = (title="", tags=[], metadata={}) ->
     base[key] = metadata[key]
   fname = get-filename base.id
   fs.mkdir-sync fname
-  fs.write-file-sync fname + '/meta', (yaml-dump base)
-  fs.write-file-sync fname + '/deltos', \...
+  fs.write-file-sync fname + '/deltos', (yaml-dump base) + '\n---\n'
   # finally print the name so it can be used
   return fname
 
@@ -58,13 +57,9 @@ export philtre-entries = (query) ->
     out.push "#{hit.id}: #{hit.title}"
   return out
 
-read-entry = (id, skip-body=false) ->
+read-entry = (id) ->
   try
-    header = fs.read-file-sync get-filename(id) + '/meta', \utf-8
-    body = ''
-    if not skip-body
-      body = fs.read-file-sync get-filename(id) + '/deltos', \utf-8
-    metadata = yaml header
+    [metadata, body] = get-entry-parts id
   catch e
     console.error "Error parsing YAML header:\n" + header
     console.error "Error message:" + e.message
@@ -124,7 +119,7 @@ export get-all-metadata = memoize ->
   for ff in fs.readdir-sync BASEDIR
     base = BASEDIR + '/' + ff
     if cdate < get-mtime("#base/meta")
-      entry = read-entry ff, true
+      entry = read-entry ff
       entries[entry.id] = entry
 
   write-meta-cache entries
@@ -162,7 +157,7 @@ export get-all-entries = memoize ->
   cdate =  cache.date
   for ff in fs.readdir-sync BASEDIR
     base = BASEDIR + '/' + ff
-    if cdate < get-mtime("#base/deltos") or cdate < get-mtime("#base/meta")
+    if cdate < get-mtime("#base/deltos")
       entry = read-entry ff
       entries[entry.id] = entry
 
@@ -182,9 +177,12 @@ export get-raw-entry = ->
   return [(yaml head), body]
 
 get-entry-parts = ->
-  head = fs.read-file-sync (get-filename it) + \/meta, \utf-8
-  body = fs.read-file-sync (get-filename it) + \/deltos, \utf-8
-  return [head, body]
+  raw = fs.read-file-sync get-filename(it) + '/deltos', \utf-8
+  parts = raw.split '\n---\n'
+  header = parts.shift!
+  body = parts.join '\n---\n'
+  metadata = yaml header
+  return [(yaml header), body]
 
 export get-new-id = (fname-getter=get-filename) ->
   # get a new uuid
