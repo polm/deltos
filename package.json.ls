@@ -17,6 +17,7 @@ license: \WTFPL
 dependencies:
   'js-yaml': \^3.2.2
   'markdown-it': \^8.3.1
+  'markdown-it-anchor': \^4.0.0
   'node-uuid': \^1.4.1
   'prelude-ls': \^1.1.1
   domino: \^1.0.19
@@ -24,6 +25,7 @@ dependencies:
   mkdirp: \^0.5.1
   searchy: \^0.0.21
   philtre: \^1.0.1
+  'fs-extra': \^2.1.2
 
 dev-dependencies:
   livescript: \^1.4.0
