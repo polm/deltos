@@ -154,7 +154,7 @@ export get-all-entries-async = (entries, transformer, progress, finish) ->
 export get-all-entries = memoize ->
   cache = load-full-cache!
   entries = cache.entries
-  cdate =  cache.date
+  cdate = cache.date
   for ff in fs.readdir-sync BASEDIR
     base = BASEDIR + '/' + ff
     if cdate < get-mtime("#base/deltos")

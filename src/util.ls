@@ -161,7 +161,7 @@ export install-theme = (theme-git-url) ->
 
 export get-mtime = (fname) ->
   try
-    fs.stat-sync(fname).mtime
+    fs.stat-sync(fname).mtime.toISOString!
   catch # happens if file doesn't exist
     return 0
 
