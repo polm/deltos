@@ -16,7 +16,7 @@ license: \WTFPL
 
 dependencies:
   'js-yaml': \^3.2.2
-  'markdown-it': \^6.0.0
+  'markdown-it': \^8.3.1
   'node-uuid': \^1.4.1
   'prelude-ls': \^1.1.1
   domino: \^1.0.19
