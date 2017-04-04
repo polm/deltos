@@ -14,7 +14,7 @@ export new-note = (title="", tags=[], metadata={}) ->
     base[key] = metadata[key]
   fname = get-filename base.id
   fs.mkdir-sync fname
-  fs.write-file-sync fname + '/deltos', (yaml-dump base) + '\n---\n'
+  fs.write-file-sync fname + '/deltos', (yaml-dump base) + '---\n'
   # finally print the name so it can be used
   return fname
 
