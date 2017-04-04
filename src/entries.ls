@@ -1,5 +1,5 @@
 {memoize, local-iso-time, get-yesterday, yaml, yaml-dump, \
- deltos-home, BASEDIR, get-filename, tagged, get-slug} = require \./util
+ deltos-home, BASEDIR, get-filename, tagged, get-slug, get-mtime} = require \./util
 fs = require \fs
 uuid = require \node-uuid
 {filter, values, sort-by, reverse} = require \prelude-ls
@@ -13,7 +13,8 @@ export new-note = (title="", tags=[], metadata={}) ->
   for key of metadata
     base[key] = metadata[key]
   fname = get-filename base.id
-  fs.write-file-sync fname, (yaml-dump base) + "---\n"
+  fs.mkdir-sync fname
+  fs.write-file-sync fname + '/deltos', (yaml-dump base) + '---\n'
   # finally print the name so it can be used
   return fname
 
@@ -25,10 +26,10 @@ export render-tsv-entry = (entry) ->
   [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
 
 export dump-tsv = ->
-  dump-tsv-core get-all-entries!
+  dump-tsv-core get-all-metadata!
 
 export dump-tsv-tagged = (tag) ->
-  dump-tsv-core (get-all-entries! |> filter tagged tag)
+  dump-tsv-core (get-all-metadata! |> filter tagged tag)
 
 dump-tsv-core = (entries) ->
   # dump a simple tsv file with fields (title, tags, id)
@@ -57,10 +58,8 @@ export philtre-entries = (query) ->
   return out
 
 read-entry = (id) ->
-  raw-text = fs.read-file-sync get-filename(id), \utf-8
   try
-    [header, body] = raw-text.split "\n---\n"
-    metadata = yaml header
+    [metadata, body] = get-entry-parts id
   catch e
     console.error "Error parsing YAML header:\n" + header
     console.error "Error message:" + e.message
@@ -98,12 +97,69 @@ read-entry = (id) ->
   metadata.raw-body = body
   return metadata
 
+load-full-cache = -> load-cache deltos-home + '/cache.json'
+write-full-cache = -> write-cache deltos-home + '/cache.json', it
+load-meta-cache = -> load-cache deltos-home + '/cache.meta.json'
+write-meta-cache = -> write-cache deltos-home + '/cache.meta.json', it
+
+load-cache = (cfile) ->
+  if not fs.exists-sync cfile
+    return {date: 0, entries: {}} # no cache
+
+  return JSON.parse fs.read-file-sync(cfile, \utf-8)
+
+write-cache = (cfile, entries) ->
+  cache = {date: (new Date!.toISOString!), entries: entries}
+  fs.write-file-sync cfile, JSON.stringify cache
+
+export get-all-metadata = memoize ->
+  cache = load-meta-cache!
+  entries = cache.entries
+  cdate =  cache.date
+  for ff in fs.readdir-sync BASEDIR
+    base = BASEDIR + '/' + ff
+    if cdate < get-mtime("#base/meta")
+      entry = read-entry ff
+      entries[entry.id] = entry
+
+  write-meta-cache entries
+  return values entries |> sort-by (.date) |> reverse
+
+export get-all-entries-async = (entries, transformer, progress, finish) ->
+  files = fs.readdir-sync BASEDIR
+
+  rev-date = (a, b) ->
+    if a.date == b.date then return 0
+    if a.date < b.date then return 1
+    return -1
+
+  read-file = ->
+    if files.length == 0
+      entries.sort rev-date
+      progress?!
+      return finish?!
+    entry = read-entry files.shift!
+    if transformer
+      entry = transformer entry
+    entries.push entry
+    if files.length % 100 == 0
+      entries.sort rev-date
+      progress?!
+    set-timeout read-file, 0
+
+  read-file!
+  return entries
+
 # use this for filtering etc.
 export get-all-entries = memoize ->
-  entries = {}
+  cache = load-full-cache!
+  entries = cache.entries
+  cdate =  cache.date
   for ff in fs.readdir-sync BASEDIR
-    entry = read-entry ff
-    entries[entry.id] = entry
+    base = BASEDIR + '/' + ff
+    if cdate < get-mtime("#base/deltos")
+      entry = read-entry ff
+      entries[entry.id] = entry
 
   # populate "children" - this is not recursive
   for key, entry of entries
@@ -113,6 +169,7 @@ export get-all-entries = memoize ->
         if not entries[parent].children then entries[parent].children = []
         entries[parent].children.push entry.id
 
+  write-full-cache entries
   return values entries |> sort-by (.date) |> reverse
 
 export get-raw-entry = ->
@@ -120,11 +177,12 @@ export get-raw-entry = ->
   return [(yaml head), body]
 
 get-entry-parts = ->
-  text = fs.read-file-sync (get-filename it), \utf-8
-  parts = text.split "\n---\n"
-  head = parts.0
-  body = parts[1 to].join "\n---\n"
-  return [head, body]
+  raw = fs.read-file-sync get-filename(it) + '/deltos', \utf-8
+  parts = raw.split '\n---\n'
+  header = parts.shift!
+  body = parts.join '\n---\n'
+  metadata = yaml header
+  return [(yaml header), body]
 
 export get-new-id = (fname-getter=get-filename) ->
   # get a new uuid
@@ -149,11 +207,11 @@ export new-daily = ->
   yesterday = entries.filter(-> it.daily == get-yesterday!)?0
 
   fname = new-note "Daily Notes - #today", [], daily: today
+  fname += '/deltos'
   fs.append-file-sync fname, "\ndeltos todos\n"
   fs.append-file-sync fname, dump-todos!
   fs.append-file-sync fname, "\n\n"
   if yesterday
     fs.append-file-sync fname, ".(Yesterday//#{yesterday.id})\n\n"
   return fname
-
 

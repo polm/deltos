@@ -16,13 +16,13 @@ license: \WTFPL
 
 dependencies:
   'js-yaml': \^3.2.2
-  'markdown-it': \^6.0.0
+  'markdown-it': \^8.3.1
   'node-uuid': \^1.4.1
   'prelude-ls': \^1.1.1
   domino: \^1.0.19
   rss: \^1.0.0
   mkdirp: \^0.5.1
-  searchy: \^0.0.19
+  searchy: \^0.0.21
   philtre: \^1.0.1
 
 dev-dependencies:

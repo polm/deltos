@@ -26,6 +26,14 @@ export yaml-dump = ->
   # as with reading, we only expect strings
   Yaml.safe-dump it, schema: Yaml.FAILSAFE_SCHEMA, flow-level: 1
 
+Markdown = require(\markdown-it)(html: true)
+             .use require \markdown-it-footnote
+             .use require \markdown-it-highlightjs
+             .use( (require \markdown-it-anchor), {permalink: true,
+             permalinkSymbol: \☙, level: 1, permalinkBefore: true})
+
+export markdown = -> Markdown.render it
+
 # simple memoizer for one-argument functions or thunks
 export memoize = (func) ->
   output = {}
@@ -102,19 +110,24 @@ export launch-search = (after) ->
   # in particular, searchy can be slow to start if migemo is enabled
   {search-using-default} = require \searchy
   {philtre} = require \philtre
-  {dump-tsv, render-tsv-entry, new-note, get-all-entries} = require \./entries
+  {render-tsv-entry, new-note, get-all-entries-async} = require \./entries
 
-  entries = get-all-entries!
+  entry-to-string = -> render-tsv-entry(this).split("\t").join(" :: ")
+  add-tostring = ->
+    it.to-string = entry-to-string
+    return it
+
+  entries = []
   edit-existing = -> launch-editor get-filename it.id
   edit-new = -> launch-editor new-note it
 
-  for entry in entries
-    entry.to-string = -> render-tsv-entry(this).split("\t").join(" :: ")
-  search-using-default entries, edit-existing, edit-new, (needle, haystack) ->
+  searchy = search-using-default entries, edit-existing, edit-new, (needle, haystack) ->
     try
       return philtre(needle, [haystack]).length
     catch
       return false
+
+  get-all-entries-async searchy.items, add-tostring, searchy.refresh
 
 export read-config = memoize ->
   try
@@ -144,3 +157,11 @@ export install-theme = (theme-git-url) ->
     if file == "README.md" then continue
     fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/site/#file"
     fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/private/#file"
+
+
+export get-mtime = (fname) ->
+  try
+    fs.stat-sync(fname).mtime
+  catch # happens if file doesn't exist
+    return 0
+

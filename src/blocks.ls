@@ -1,27 +1,43 @@
 # default blocks for deltos
 child_process = require \child_process
-Markdown = require(\markdown-it)(html: true)
-markdown = -> Markdown.render it
 {get-all-entries} = require \./entries
 {map, sort-by, sort-with, reverse} = require \prelude-ls
-{read-config, is-in, tagged, get-filename, get-slug} = require \./util
+{markdown, deltos-home, read-config, is-in, tagged, get-filename, get-slug} = require \./util
 width = read-config!.width or 500
-fs = require \fs
+exec = require('child_process').exec-sync
+fs = require \fs-extra
 
 blocks = {}
 
 blocks.img = (block, entry) ->
   words = block.split(' ')
   words.shift!
-  img-src = words.shift!
-  tag = "<img src=\"#{img-src}\"/>"
+  img-src = words.shift!trim!
+
+  src-file = get-filename(entry.id) + '/' + img-src
+  fname = img-src.split('/')[*-1]
+  ftype = img-src.split('.')[*-1]
+
+  thumbroot = get-filename(entry.id) + '/img/'
+  img-src = "/by-id/#{entry.id}/img/#fname.l.#ftype"
+  big-src = "/by-id/#{entry.id}/#fname"
+
+  if not fs.exists-sync thumbroot + fname + '.l.' + ftype
+    # this is done for every image
+    fs.mkdirp thumbroot
+    exec "convert \"#src-file\" -resize #{width}x1000 #thumbroot/#fname.l.#ftype"
+
+  tag = "<a href=\"#{big-src}\"><img src=\"#{img-src}\"/></a>"
   caption = if words.length then ('<p class="caption">' + markdown(words.join(' ')).substr 3) else ''
   # for meta-tags
   if not entry.first-image
-    entry.first-image = img-src
-    if entry.first-image.split('.')[*-2] == 'l'
-      # use our cropped image
-      entry.first-image = entry.first-image.split('.l.').join '.c.'
+    cropped-header = "#thumbroot/#fname.c.#ftype"
+    if not fs.exists-sync cropped-header
+      # this is only necessary for the first image
+      exec "convert \"#src-file\" -resize '#{width}x200^' -gravity center -extent #{width}x200 #thumbroot/#fname.c.#ftype"
+      exec "convert \"#src-file\" -resize '90x90^' -gravity center -crop 90x90+0+0 #thumbroot/#fname.s.#ftype"
+
+    entry.first-image = "/by-id/#{entry.id}/img/#fname.c.#ftype"
   return "<div class=\"img\">" + tag + caption + "</div>"
 
 blocks.video = (block, entry) ->
@@ -66,10 +82,10 @@ build-image-list-page = (entries) ->
 to-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
   day = it.date.substr 0, 10
-  "- [#{it.title}](/by-id/#{it.id}.html\##{get-slug it}) #day <span class=\"tags\">#{tags}</span>"
+  "- [#{it.title}](/by-id/#{it.id}\##{get-slug it}) #day <span class=\"tags\">#{tags}</span>"
 
 to-image-block = ->
-  out = "<a href=\"/by-id/#{it.id}.html\">"
+  out = "<a href=\"/by-id/#{it.id}\">"
   out += '<div class="img img-block">'
   if it.first-image
     out += "<img src=\"#{it.first-image}\">"
@@ -138,13 +154,14 @@ deltos-link-to-html = ->
   entries = get-all-entries!
   it.replace link-regex, (matched, label, dest) ->
     entry = entries.filter(-> it.id == dest).0
-    "<a href=\"/by-id/#{dest}.html\##{get-slug entry}\">#{label}</a>"
+    "<a href=\"/by-id/#{dest}\##{get-slug entry}\">#{label}</a>"
 
 #TODO give this a better name
 process-block = (keyword, block, entry) ->
   try
     blocks[keyword] block, entry
   catch e
+    # TODO: render this error in the html
     console.log "keyword: " + keyword
     throw e
 
