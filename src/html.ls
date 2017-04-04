@@ -1,13 +1,8 @@
 fs = require \fs-extra
-{get-mtime, memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
+{markdown, get-mtime, memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 {render-block} = require \./blocks
-
-Markdown = require(\markdown-it)(html: true)
-             .use require \markdown-it-footnote
-             .use require \markdown-it-highlightjs
-markdown = -> Markdown.render it
 
 # placeholder globals; only required as needed
 domino = RSS = eep = Section = {}

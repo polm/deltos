@@ -26,6 +26,14 @@ export yaml-dump = ->
   # as with reading, we only expect strings
   Yaml.safe-dump it, schema: Yaml.FAILSAFE_SCHEMA, flow-level: 1
 
+Markdown = require(\markdown-it)(html: true)
+             .use require \markdown-it-footnote
+             .use require \markdown-it-highlightjs
+             .use( (require \markdown-it-anchor), {permalink: true,
+             permalinkSymbol: \☙, level: 1, permalinkBefore: true})
+
+export markdown = -> Markdown.render it
+
 # simple memoizer for one-argument functions or thunks
 export memoize = (func) ->
   output = {}

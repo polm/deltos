@@ -1,10 +1,8 @@
 # default blocks for deltos
 child_process = require \child_process
-Markdown = require(\markdown-it)(html: true)
-markdown = -> Markdown.render it
 {get-all-entries} = require \./entries
 {map, sort-by, sort-with, reverse} = require \prelude-ls
-{deltos-home, read-config, is-in, tagged, get-filename, get-slug} = require \./util
+{markdown, deltos-home, read-config, is-in, tagged, get-filename, get-slug} = require \./util
 width = read-config!.width or 500
 exec = require('child_process').exec-sync
 fs = require \fs-extra
