@@ -3,13 +3,14 @@ child_process = require \child_process
 {get-all-entries} = require \./entries
 {map, sort-by, sort-with, reverse} = require \prelude-ls
 {markdown, deltos-home, read-config, is-in, tagged, get-filename, get-slug} = require \./util
+{philtre} = require \philtre
 width = read-config!.width or 500
 exec = require('child_process').exec-sync
 fs = require \fs-extra
 
 blocks = {}
 
-blocks.img = (block, entry) ->
+blocks.img = (block, entry, big=false) ->
   words = block.split(' ')
   words.shift!
   img-src = words.shift!trim!
@@ -21,6 +22,8 @@ blocks.img = (block, entry) ->
   thumbroot = get-filename(entry.id) + '/img/'
   img-src = "/by-id/#{entry.id}/img/#fname.l.#ftype"
   big-src = "/by-id/#{entry.id}/#fname"
+
+  if big then img-src = big-src
 
   if not fs.exists-sync thumbroot + fname + '.l.' + ftype
     # this is done for every image
@@ -38,7 +41,13 @@ blocks.img = (block, entry) ->
       exec "convert \"#src-file\" -resize '90x90^' -gravity center -crop 90x90+0+0 #thumbroot/#fname.s.#ftype"
 
     entry.first-image = "/by-id/#{entry.id}/img/#fname.c.#ftype"
-  return "<div class=\"img\">" + tag + caption + "</div>"
+
+  cls = 'img'
+  if big then cls += ' big-img'
+  return "<div class=\"#cls\">" + tag + caption + "</div>"
+
+blocks['img-big'] = (block, entry) ->
+  blocks.img block, entry, true
 
 blocks.video = (block, entry) ->
   words = block.split(' ')
