@@ -103,41 +103,103 @@ write-meta-cache = -> write-cache deltos-home + '/cache.meta.json', it
 
 load-cache = (cfile) ->
   if not fs.exists-sync cfile
-    return {date: 0, entries: {}} # no cache
+    return {date: 0, entries: []} # no cache
 
-  return JSON.parse fs.read-file-sync(cfile, \utf-8)
+  lines = fs.read-file-sync(cfile, \utf-8).split "\n"
+  cache = JSON.parse lines.shift!
+  cache.entries = lines.filter(-> it.length > 0).map JSON.parse
+  return cache
+
+export all-entries-cache-first = (entries, transformer, progress) ->
+  find-fresh = (cache) ->
+    files = fs.readdir-sync BASEDIR
+
+    edict = {}
+    for entry in cache.entries
+      edict[entry.id] = entry
+
+    next-file = ->
+      if files.length == 0 then return
+      file = files.shift!
+      if not edict[file] # not in cache, probably new
+        entry = read-entry file
+        if transformer then entry = transformer entry
+        cache.entries.push entry
+        cache.entries.sort rev-date
+        progress?!
+        return set-timeout next-file, 0
+
+      base = get-filename(file)
+      if cache.date < get-mtime("#base/deltos")
+        entry = read-entry file
+        if transformer then entry = transformer entry
+        oldind = cache.index-of edict[file]
+        cache.entries oldind, 1, entry
+        progress?!
+        return set-timeout next-file, 0
+
+    next-file!
+  load-cache-async (deltos-home + '/cache.json'), entries, transformer, progress, find-fresh
+
+load-cache-async = (cfile, entries, transformer, progress, done) ->
+  if not fs.exists-sync cfile
+    done?!
+    return false
+
+  split = require \split
+  cdate = false
+
+  fs.create-read-stream(cfile)
+    .pipe(split!)
+    .on \data, (line) ->
+      line = line.trim!
+      if line.length == 0 then return
+      if not cdate
+        cdate := JSON.parse(line).date
+        return
+
+      entry = JSON.parse line
+      if transformer then entry = transformer entry
+      entries.push entry
+      if entries.length % 200 == 0 then progress?!
+    .on \end, ->
+      progress?!
+      done? {date: cdate, entries: entries}
+
+  return entries
+
+
+rev-date = (a, b) ->
+  if a.date == b.date then return 0
+  if a.date < b.date then return 1
+  return -1
 
 write-cache = (cfile, entries) ->
-  cache = {date: (new Date!.toISOString!), entries: entries}
-  fs.write-file-sync cfile, JSON.stringify cache
-
-export get-all-metadata = memoize ->
-  cache = load-meta-cache!
-  entries = cache.entries
-  cdate =  cache.date
-  for ff in fs.readdir-sync BASEDIR
-    base = BASEDIR + '/' + ff
-    if cdate < get-mtime("#base/meta")
-      entry = read-entry ff
-      entries[entry.id] = entry
-
-  write-meta-cache entries
-  return values entries |> sort-by (.date) |> reverse
+  # format is a metadata object on the first line, followed by one entry per line
+  out = JSON.stringify(date: (new Date!.toISOString!)) + "\n"
+  for entry in entries
+    out += JSON.stringify(entry) + "\n"
+  fs.write-file-sync cfile, out
 
 export get-all-entries-async = (entries, transformer, progress, finish) ->
   files = fs.readdir-sync BASEDIR
+  cache = load-full-cache!
 
-  rev-date = (a, b) ->
-    if a.date == b.date then return 0
-    if a.date < b.date then return 1
-    return -1
+  # sort filenames by mtime - this isn't 100% right, but it will prevent jitter
+  fobs = files.map -> {fname: it, date: get-mtime get-filename(it) + \/deltos}
+  fobs.sort rev-date
+  files = fobs.map (.fname)
+  #files = sort-by (-> get-mtime get-filename(it) + \/deltos), files |> reverse
 
   read-file = ->
     if files.length == 0
       entries.sort rev-date
       progress?!
       return finish?!
-    entry = read-entry files.shift!
+
+    id = files.shift!
+    entry = cache.entries[id] or read-entry id
+    #entry = read-entry files.shift!
     if transformer
       entry = transformer entry
     entries.push entry
@@ -152,11 +214,14 @@ export get-all-entries-async = (entries, transformer, progress, finish) ->
 # use this for filtering etc.
 export get-all-entries = memoize ->
   cache = load-full-cache!
-  entries = cache.entries
-  cdate = cache.date
+  entry-list = cache.entries
+  entries = {}
+  for entry in entry-list
+    entries[entry.id] = entry
+  cdate = ~~+(new Date cache.date)
   for ff in fs.readdir-sync BASEDIR
     base = BASEDIR + '/' + ff
-    if cdate < get-mtime("#base/deltos")
+    if cdate < get-mtime("#base/deltos") or not cdate
       entry = read-entry ff
       entries[entry.id] = entry
 
@@ -168,8 +233,9 @@ export get-all-entries = memoize ->
         if not entries[parent].children then entries[parent].children = []
         entries[parent].children.push entry.id
 
+  entries = values entries |> sort-by (.date) |> reverse
   write-full-cache entries
-  return values entries |> sort-by (.date) |> reverse
+  return entries
 
 export get-raw-entry = ->
   [head, body] = get-entry-parts it
