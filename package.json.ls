@@ -23,7 +23,7 @@ dependencies:
   domino: \^1.0.19
   rss: \^1.0.0
   mkdirp: \^0.5.1
-  searchy: \^0.0.21
+  searchy: \^0.0.23
   philtre: \^1.0.1
   'fs-extra': \^2.1.2
 
