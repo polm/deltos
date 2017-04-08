@@ -22,7 +22,8 @@
     "mkdirp": "^0.5.1",
     "searchy": "^0.0.23",
     "philtre": "^1.0.1",
-    "fs-extra": "^2.1.2"
+    "fs-extra": "^2.1.2",
+    "split": "^1.0.0"
   },
   "devDependencies": {
     "livescript": "^1.4.0"

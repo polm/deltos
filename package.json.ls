@@ -26,6 +26,7 @@ dependencies:
   searchy: \^0.0.23
   philtre: \^1.0.1
   'fs-extra': \^2.1.2
+  split: \^1.0.0
 
 dev-dependencies:
   livescript: \^1.4.0
