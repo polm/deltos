@@ -49,6 +49,7 @@ add-command \clean, "Delete built HTML etc.", ->
   fs = require \fs-extra
   dirs = [deltos-home + '/site/by-id/',
           deltos-home + '/private/by-id/']
+  fs.remove-sync deltos-home + '/cache.json'
   for dir in dirs
     for fname in fs.readdir-sync dir
       fs.remove-sync dir + fname
