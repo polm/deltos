@@ -138,17 +138,20 @@ build-hierarchical-list = (entries, depth, parent=null) ->
                 .split("\n").map(-> spacer + it).join '\n'
   return out
 
+embed-wrapper = ->
+  "<div class=\"embed-content\">" + it + "</div>"
+
 blocks.embed = (block, entry) ->
   lines = block.split "\n"
   if lines.length > 1 # we have a cache
-    return lines.slice(1).join '\n'
+    return embed-wrapper lines.slice(1).join '\n'
   url = lines.0.split(' ').slice(1).join ' '
   result = child_process.exec-sync "OEMBED_WIDTH=#width kinkan '#url'"
-  fname = get-filename entry.id
+  fname = get-filename entry.id + \/deltos
   raw-file = fs.read-file-sync fname, \utf-8
   raw-file = raw-file.split(lines.0).join(lines.0 + "\n" + result)
   fs.write-file-sync fname, raw-file, \utf-8
-  return result
+  return embed-wrapper result
 
 blocks.big = (block, entry) ->
   lines = block.split '\n'
