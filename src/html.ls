@@ -176,6 +176,14 @@ RENDERED_CACHE = {}
 read-entry-body = (entry) ->
   if RENDERED_CACHE[entry.id] then return RENDERED_CACHE[entry.id]
 
+  if entry.children
+    # have to read dependencies first so metadata is right
+    # would be great if this was more general
+    entries = get-all-entries!
+    for child in entry.children
+      child-entry = entries.filter(-> child == it.id).0
+      read-entry-body child-entry
+
   expanded = ''
   for block in entry.raw-body.split "\n\n"
     expanded += "\n\n" + render-block block, entry
