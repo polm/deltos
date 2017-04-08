@@ -2,7 +2,7 @@
  deltos-home, BASEDIR, get-filename, tagged, get-slug, get-mtime} = require \./util
 fs = require \fs
 uuid = require \node-uuid
-{filter, values, sort-by, reverse} = require \prelude-ls
+{map, filter, values, sort-by, reverse} = require \prelude-ls
 
 export new-note = (title="", tags=[], metadata={}) ->
   base = do
@@ -26,17 +26,15 @@ export render-tsv-entry = (entry) ->
   [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
 
 export dump-tsv = ->
-  dump-tsv-core get-all-metadata!
+  dump-tsv-core get-all-entries!
 
 export dump-tsv-tagged = (tag) ->
-  dump-tsv-core (get-all-metadata! |> filter tagged tag)
+  dump-tsv-core (get-all-entries! |> filter tagged tag)
 
 dump-tsv-core = (entries) ->
   # dump a simple tsv file with fields (title, tags, id)
-  out = []
   for entry in entries
-    out.push render-tsv-entry entry
-  return out.join "\n"
+    console.log render-tsv-entry entry
 
 export grep-entries = (pat) ->
   # smart case - ignore case unless caps in search pattern

@@ -18,8 +18,7 @@ add-command "init", "Set up DELTOS_HOME", ->
   mkdirp.sync deltos-home + \by-id
   mkdirp.sync deltos-home + \site/by-id
   mkdirp.sync deltos-home + \private/by-id
-add-command "install-theme [git url]", "Install theme", ->
-  install-theme it
+add-command "install-theme [git url]", "Install theme", install-theme
 add-command "title", "Show title of current deltos", ->
   console.log read-config!.title
 add-command "config", "Edit config file", edit-config
@@ -57,9 +56,8 @@ add-command \json, "Dump all entries to JSON", ->
   {dump-json} = require \./html
   console.log dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
-add-command \tagged,  "Dump TSV for posts with tag", ->
-  console.log dump-tsv-tagged it
-add-command \tsv,  "Dump basic TSV", -> console.log dump-tsv!
+add-command \tagged,  "Dump TSV for posts with tag", dump-tsv-tagged
+add-command \tsv,  "Dump basic TSV", dump-tsv
 add-command \version, "Show version number", ->
   pkg = require \../package.json
   console.log pkg.version
