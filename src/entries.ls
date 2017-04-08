@@ -59,7 +59,8 @@ read-entry = (id) ->
   try
     [metadata, body] = get-entry-parts id
   catch e
-    console.error "Error parsing YAML header:\n" + header
+    console.error "Entry ID: " + id
+    console.error "Error parsing YAML header:\n" + metadata
     console.error "Error message:" + e.message
     metadata = do
       id: id
