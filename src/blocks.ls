@@ -64,7 +64,7 @@ blocks.archive = (block, entry) ->
   build-image-list-page!.join "\n"
 
 blocks.children = (block, entry) ->
-  build-list-page(get-child-entries entry).join "\n"
+  build-image-list-page(get-child-entries entry).join "\n"
 
 get-child-entries = (parent) ->
   get-all-entries!.filter(-> -1 != parent.children?.index-of it.id)
