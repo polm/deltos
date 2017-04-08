@@ -168,7 +168,6 @@ load-cache-async = (cfile, entries, transformer, progress, done) ->
 
   return entries
 
-
 rev-date = (a, b) ->
   if a.date == b.date then return 0
   if a.date < b.date then return 1
@@ -180,36 +179,6 @@ write-cache = (cfile, entries) ->
   for entry in entries
     out += JSON.stringify(entry) + "\n"
   fs.write-file-sync cfile, out
-
-export get-all-entries-async = (entries, transformer, progress, finish) ->
-  files = fs.readdir-sync BASEDIR
-  cache = load-full-cache!
-
-  # sort filenames by mtime - this isn't 100% right, but it will prevent jitter
-  fobs = files.map -> {fname: it, date: get-mtime get-filename(it) + \/deltos}
-  fobs.sort rev-date
-  files = fobs.map (.fname)
-  #files = sort-by (-> get-mtime get-filename(it) + \/deltos), files |> reverse
-
-  read-file = ->
-    if files.length == 0
-      entries.sort rev-date
-      progress?!
-      return finish?!
-
-    id = files.shift!
-    entry = cache.entries[id] or read-entry id
-    #entry = read-entry files.shift!
-    if transformer
-      entry = transformer entry
-    entries.push entry
-    if files.length % 100 == 0
-      entries.sort rev-date
-      progress?!
-    set-timeout read-file, 0
-
-  read-file!
-  return entries
 
 # use this for filtering etc.
 export get-all-entries = memoize ->
