@@ -71,7 +71,15 @@ get-child-entries = (parent) ->
 
 blocks.recent = (block, entry) ->
   entry.updated = true
-  build-image-list-page!.slice(0, 5).join "\n"
+  entries = get-all-entries!
+
+  words = block.split(' ')
+  if words.length > 1
+    words.shift!
+    query = words.join ' '
+    entries = philtre query, entries
+
+  build-image-list-page(entries).slice(0, 5).join "\n"
 
 build-list-page = (entries, linker=to-markdown-link) ->
   if not entries then entries = get-all-entries!
