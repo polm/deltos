@@ -12,8 +12,10 @@ export get-filename = -> BASEDIR + it
 CONFIG = deltos-home + \config.yaml
 
 fs = require \fs
-Yaml = require \js-yaml
+Yaml = {}
 export yaml = ->
+  if not Yaml.safe-load then
+    Yaml := require(\js-yaml)
   # The failsafe schema interperets all terminal values as strings
   # We don't need support for numbers, and some "special" features
   # can cause issues
@@ -22,17 +24,22 @@ export yaml = ->
   Yaml.safe-load it, schema: Yaml.FAILSAFE_SCHEMA
 
 export yaml-dump = ->
+  if not Yaml.safe-load then
+    Yaml := require(\js-yaml)
   # flowlevel controls how compact the exported yaml is
   # as with reading, we only expect strings
   Yaml.safe-dump it, schema: Yaml.FAILSAFE_SCHEMA, flow-level: 1
 
-Markdown = require(\markdown-it)(html: true)
+Markdown = {}
+
+export markdown = ->
+  if not Markdown.render
+    Markdown := require(\markdown-it)(html: true)
              .use require \markdown-it-footnote
              .use require \markdown-it-highlightjs
              .use( (require \markdown-it-anchor), {permalink: true,
              permalinkSymbol: \☙, level: 1, permalinkBefore: true})
-
-export markdown = -> Markdown.render it
+  Markdown.render it
 
 # simple memoizer for one-argument functions or thunks
 export memoize = (func) ->
