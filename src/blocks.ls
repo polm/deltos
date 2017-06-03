@@ -139,7 +139,7 @@ build-hierarchical-list = (entries, depth, parent=null) ->
   return out
 
 embed-wrapper = ->
-  "<div class=\"embed-content\">" + it + "</div>"
+  "<div class=\"embed-content\">\n\n" + it + "\n\n</div>"
 
 blocks.embed = (block, entry) ->
   lines = block.split "\n"
@@ -161,6 +161,12 @@ blocks.big = (block, entry) ->
     out += '<span class="bigtext">' + line + '</span>'
   out += '</div>'
   return out
+
+blocks.html = (block, entry) ->
+  # include an external html file literally
+  words = block.trim!split(' ')
+  words.shift!
+  embed-wrapper fs.read-file-sync get-filename(entry.id) + '/' + words.0
 
 blocks.class = (block, entry) ->
   style = block.split("\n").0.split(' ').1 # first word after "class" is value to use
