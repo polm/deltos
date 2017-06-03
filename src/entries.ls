@@ -115,7 +115,7 @@ export all-entries-cache-first = (entries, transformer, progress) ->
     files = fs.readdir-sync BASEDIR
 
     edict = {}
-    for entry in cache.entries
+    for entry in cache?.entries
       edict[entry.id] = entry
 
     next-file = ->
