@@ -83,7 +83,7 @@ read-entry = (id) ->
   if metadata.parents # add some nice text
     if metadata.parents.length == 1
       collection = read-entry metadata.parents.0
-      metadata.collections = "This post is part of a collection on <a href=\"/by-id/#{collection.id}.html\##{get-slug collection}\">#{collection.title}</a>."
+      metadata.collections = "This post is part of a collection on <a href=\"/by-id/#{collection.id}/\##{get-slug collection}\">#{collection.title}</a>."
     else
       metadata.collections = "This post is part of collections on "
       colls = []
