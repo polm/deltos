@@ -89,7 +89,7 @@ read-entry = (id) ->
       colls = []
       for coll in metadata.parents
         collection = read-entry coll
-        colls.push "<a href=\"/by-id/#{collection.id}.html\##{get-slug collection}\">#{collection.title}</a>"
+        colls.push "<a href=\"/by-id/#{collection.id}/\##{get-slug collection}\">#{collection.title}</a>"
       colls[*-1] = "and " + colls[*-1] + "."
       metadata.collections += colls.join ", "
 
