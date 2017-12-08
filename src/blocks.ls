@@ -61,7 +61,15 @@ blocks.search = (block, entry) ->
 
 blocks.archive = (block, entry) ->
   entry.updated = true
-  build-image-list-page!.join "\n"
+  entries = get-all-entries!
+
+  words = block.split(' ')
+  if words.length > 1
+    words.shift!
+    query = words.join ' '
+    entries = philtre query, entries
+
+  build-list-page(entries).join "\n"
 
 blocks.children = (block, entry) ->
   build-image-list-page(get-child-entries entry).join "\n"
