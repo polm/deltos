@@ -72,12 +72,12 @@ blocks.archive = (block, entry) ->
   build-list-page(entries).join "\n"
 
 blocks.children = (block, entry) ->
-  build-image-list-page(get-child-entries entry).join "\n"
+  build-list-page(get-child-entries entry).join "\n"
 
 get-child-entries = (parent) ->
   get-all-entries!.filter(-> -1 != parent.children?.index-of it.id)
 
-blocks.recent = (block, entry) ->
+blocks.recent = (block, entry, list-builder=build-image-list-page) ->
   entry.updated = true
   entries = get-all-entries!
 
@@ -87,7 +87,10 @@ blocks.recent = (block, entry) ->
     query = words.join ' '
     entries = philtre query, entries
 
-  build-image-list-page(entries).slice(0, 5).join "\n"
+  list-builder(entries).slice(0, 5).join "\n"
+
+blocks['recent-text'] = (block, entry) ->
+  blocks.recent block, entry, build-list-page
 
 build-list-page = (entries, linker=to-markdown-link) ->
   if not entries then entries = get-all-entries!
