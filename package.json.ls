@@ -18,7 +18,7 @@ dependencies:
   'js-yaml': \^3.2.2
   'markdown-it': \^8.3.1
   'markdown-it-anchor': \^4.0.0
-  'node-uuid': \^1.4.1
+  'uuid': \^3.0.0
   'prelude-ls': \^1.1.1
   domino: \^1.0.19
   rss: \^1.0.0
