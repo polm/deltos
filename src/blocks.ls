@@ -69,7 +69,7 @@ blocks.archive = (block, entry) ->
     query = words.join ' '
     entries = philtre query, entries
 
-  build-list-page(entries).join "\n"
+  build-list-page(entries, to-dated-markdown-link).join "\n"
 
 blocks.children = (block, entry) ->
   build-list-page(get-child-entries entry).join "\n"
@@ -107,10 +107,14 @@ build-list-page = (entries, linker=to-markdown-link) ->
 build-image-list-page = (entries) ->
   build-list-page entries, to-image-block
 
-to-markdown-link = ->
+to-dated-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
-  day = it.date.substr 0, 10
-  "- [#{it.title}](/by-id/#{it.id}\##{get-slug it}) #day <span class=\"tags\">#{tags}</span>"
+  day = "<span class=\"date\">" + (it.date.substr 0, 10) + "</span>"
+  #"- [#{it.title}](/by-id/#{it.id}\##{get-slug it}) #day <span class=\"tags\">#{tags}</span>"
+  "- #day - [#{it.title}](/by-id/#{it.id}\##{get-slug it})"
+
+to-markdown-link = ->
+  "- [#{it.title}](/by-id/#{it.id}\##{get-slug it})"
 
 to-image-block = ->
   out = "<a href=\"/by-id/#{it.id}\">"
