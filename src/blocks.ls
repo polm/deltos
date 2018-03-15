@@ -168,15 +168,6 @@ blocks.embed = (block, entry) ->
   fs.write-file-sync fname, raw-file, \utf-8
   return embed-wrapper result
 
-blocks.big = (block, entry) ->
-  lines = block.split '\n'
-  lines.shift! # we don't care about the first
-  out = '<div class="bigholder">'
-  for line in lines
-    out += '<span class="bigtext">' + line + '</span>'
-  out += '</div>'
-  return out
-
 blocks.html = (block, entry) ->
   # include an external html file literally
   words = block.trim!split(' ')
