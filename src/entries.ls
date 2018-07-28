@@ -26,7 +26,7 @@ export render-tsv-entry = (entry) ->
   [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
 
 export dump-tsv = ->
-  dump-tsv-core get-all-entries!
+  get-all-entries-quick -> console.log render-tsv-entry it
 
 export dump-tsv-tagged = (tag) ->
   dump-tsv-core (get-all-entries! |> filter tagged tag)
@@ -205,6 +205,13 @@ export get-all-entries = memoize ->
   entries = values entries |> sort-by (.date) |> reverse
   write-full-cache entries
   return entries
+
+get-all-entries-quick = (output) ->
+  # this if for tsv dump or other cases where you just want the list quick
+  # parents are not populated
+  for ff in fs.readdir-sync BASEDIR
+    base = BASEDIR + '/' + ff
+    output read-entry ff
 
 export get-raw-entry = ->
   [head, body] = get-entry-parts it
