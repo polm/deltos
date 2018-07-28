@@ -112,29 +112,15 @@ export launch-editor = (file, after) ->
 
   after?!
 
-export launch-search = (after) ->
-  # These requires are here because they are not otherwise used
-  # in particular, searchy can be slow to start if migemo is enabled
-  {search-using-default} = require \searchy
-  {philtre} = require \philtre
-  {render-tsv-entry, new-note, all-entries-cache-first} = require \./entries
+export launch-search = ->
+  spawn = require(\child_process).spawn
+  fzf = spawn 'deltos tsv | fzf',
+    stdio: [\inherit, \pipe, \inherit]
+    shell: true
 
-  entry-to-string = -> render-tsv-entry(this).split("\t").join(" :: ")
-  add-tostring = ->
-    it.to-string = entry-to-string
-    return it
-
-  entries = []
-  edit-existing = -> launch-editor get-filename(it.id) + \/deltos
-  edit-new = -> launch-editor new-note(it) + \/deltos
-
-  searchy = search-using-default entries, edit-existing, edit-new, (needle, haystack) ->
-    try
-      return philtre(needle, [haystack]).length
-    catch
-      return false
-
-  all-entries-cache-first searchy.items, add-tostring, searchy.refresh
+  fzf.stdout.set-encoding \utf-8
+  fzf.stdout.on \data, ->
+    launch-editor get-filename it.trim!.split('\t')[2]
 
 export read-config = memoize ->
   try
