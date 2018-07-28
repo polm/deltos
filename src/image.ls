@@ -11,8 +11,6 @@ process-image = (imgdir, base, ftype) ->
   exec "convert \"#fname\" -resize #{width}x1000 #imgdir/#base.l.#ftype"
   # cropped preview, for image block links etc.
   exec "convert \"#fname\" -resize '#{width}x200^' -gravity center -extent #{width}x200 #imgdir/#base.c.#ftype"
-  # thumbnail for search
-  exec "convert \"#fname\" -gravity center -resize '90x90^' -crop 90x90+0+0 #imgdir/#base.s.#ftype"
   # return blog size so it can optionally be printed for pasting
   return "/img/#base.l.#ftype"
 

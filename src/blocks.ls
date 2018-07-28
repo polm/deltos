@@ -56,9 +56,6 @@ blocks.video = (block, entry) ->
   caption = if words.length then ('<p class="caption">' + words.join(' ') + '</p>') else ''
   return "<div class=\"img\">" + vid-tag + caption + "</div>"
 
-blocks.search = (block, entry) ->
-  return '<div class="search"><input class="deltos-search" type="text"></input><div class="deltos-results-summary"></div><div class="deltos-results"></div><script src="/search.js"></script></div>'
-
 blocks.archive = (block, entry) ->
   entry.updated = true
   entries = get-all-entries!
