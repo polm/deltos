@@ -40,7 +40,7 @@ blocks.img = (block, entry, big=false) ->
       exec "convert \"#src-file\" -resize '#{width}x200^' -gravity center -extent #{width}x200 #thumbroot/#fname.c.#ftype"
       exec "convert \"#src-file\" -resize '90x90^' -gravity center -crop 90x90+0+0 #thumbroot/#fname.s.#ftype"
 
-    entry.first-image = "/by-id/#{entry.id}/img/#fname.c.#ftype"
+    entry.first-image = "/by-id/#{entry.id}/#fname"
 
   cls = 'img'
   if big then cls += ' big-img'
