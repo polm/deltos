@@ -2,6 +2,7 @@ fs = require \fs-extra
 {markdown, get-mtime, memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
+{dirname} = require \path
 {render-block} = require \./blocks
 
 # placeholder globals; only required as needed
@@ -227,6 +228,7 @@ build-site-html = (root, entries) ->
     if entry.slug # for fixed names
       # have to symlink to a file (rather than dir) here so that the root index.html works
       fs.remove-sync "#{root}/#{entry.slug}.html"
+      fs.mkdirp-sync dirname "#{root}/#{entry.slug}"
       fs.symlink-sync "#{root}#{suffix}/index.html", "#{root}/#{entry.slug}.html"
 
     # write a deltos source file for other people to import

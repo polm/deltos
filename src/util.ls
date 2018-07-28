@@ -172,3 +172,6 @@ export get-mtime = (fname) ->
   catch # happens if file doesn't exist
     0
 
+export get-url = ->
+  if it.slug then return "/#{it.slug}.html"
+  "/by-id/#{it.id}\##{get-slug it}"
