@@ -16,14 +16,14 @@ export new-note = (title="", tags=[], metadata={}) ->
   fs.mkdir-sync fname
   fs.write-file-sync fname + '/deltos', (yaml-dump base) + '---\n'
   # finally print the name so it can be used
-  return fname
+  return base.id
 
 export dump-todos = ->
   entries = get-all-entries! |> filter (-> it.todo and not it.done) |> sort-by (.todo)
   return entries.map(-> "- .(#{it.title}//#{it.id}) #{it.todo}").join "\n"
 
 export render-tsv-entry = (entry) ->
-  [entry.title, (entry.tags.map(-> \# + it).join ','), entry.id].join '\t'
+  [entry.title, (entry.tags.map(-> \# + it).join ','), entry.date.substr(0, 10), entry.id].join '\t'
 
 export dump-tsv = ->
   get-all-entries-quick -> console.log render-tsv-entry it
@@ -55,7 +55,7 @@ export philtre-entries = (query) ->
     out.push "#{hit.id}: #{hit.title}"
   return out
 
-read-entry = (id) ->
+export read-entry = (id) ->
   try
     [metadata, body] = get-entry-parts id
   catch e
@@ -118,10 +118,9 @@ export get-all-entries = memoize ->
         entries[parent].children.push entry.id
 
   entries = values entries |> sort-by (.date) |> reverse
-  write-full-cache entries
   return entries
 
-get-all-entries-quick = (output) ->
+export get-all-entries-quick = (output) ->
   # this if for tsv dump or other cases where you just want the list quick
   # parents are not populated
   for ff in fs.readdir-sync BASEDIR

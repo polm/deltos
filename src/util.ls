@@ -110,7 +110,7 @@ export launch-editor = (file, after) ->
     stdio: \inherit
   }
 
-  after?!
+  cp.on \close, -> after?!
 
 export launch-search = ->
   spawn = require(\child_process).spawn
@@ -120,7 +120,7 @@ export launch-search = ->
 
   fzf.stdout.set-encoding \utf-8
   fzf.stdout.on \data, ->
-    launch-editor get-filename it.trim!.split('\t')[2]
+    launch-editor get-filename it.trim!.split('\t')[*-1]
 
 export read-config = memoize ->
   try
@@ -150,7 +150,6 @@ export install-theme = (theme-git-url) ->
     if file == "README.md" then continue
     fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/site/#file"
     fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/private/#file"
-
 
 export get-mtime = (fname) ->
   try

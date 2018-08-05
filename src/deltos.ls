@@ -1,5 +1,6 @@
 {launch-editor, deltos-home, get-filename, read-config, edit-config, install-theme} = require \./util
-{new-note,new-daily,dump-tsv,dump-tsv-tagged,dump-todos,grep-entries,philtre-entries} = require \./entries
+{read-entry, new-note,dump-tsv,dump-tsv-tagged,dump-todos,grep-entries,philtre-entries} = require \./entries
+{db-init, db-update, db-dump, get-thread-next, get-thread-prev, get-thread-latest} = require \./db
 process.title = \deltos
 
 # Top-level commands - these are called more or less directly by the command line
@@ -23,10 +24,19 @@ add-command "title", "Show title of current deltos", ->
   console.log read-config!.title
 add-command "config", "Edit config file", edit-config
 add-command "new [title...]", "Create a note and print the filename", (...args) ->
+  console.log get-filename new-note args.join ' '
+add-command "reply [id]", "Reply to a note in a thread", (id) ->
+  base = read-entry id
+  if not base.thread
+    console.log "No thread!"
+    process.exit 1
+  console.log get-filename new-note base.title, base.tags, thread: base.thread, 'reply-to': id
 add-command "post [title...]", "Start a new post in $EDITOR", (...args) ->
-  launch-editor new-note (args.join ' ')
-add-command "edit [id]", "Edit an existing post", ->
-  launch-editor get-filename it
+  id = new-note (args.join ' ')
+  fname = get-filename id
+  launch-editor fname, -> db-update fname
+add-command "edit [id]", "Edit an existing post", (id) ->
+  launch-editor (get-filename id), -> db-update id
 add-command \search, "Interactive search", ->
   {launch-search} = require \./util
   launch-search!
@@ -55,6 +65,12 @@ add-command \json, "Dump all entries to JSON", ->
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
 add-command \tagged,  "Dump TSV for posts with tag", dump-tsv-tagged
 add-command \tsv,  "Dump basic TSV", dump-tsv
+add-command \db-init, "Init db", ->
+  db-init!
+add-command "db-update [id]", "Update [id]'s db entry", ->
+  db-update it
+add-command "db-dump", "Dump db info", ->
+  db-dump!
 add-command \version, "Show version number", ->
   pkg = require \../package.json
   console.log pkg.version
@@ -64,6 +80,15 @@ add-command \help, "Show this help", ->
     pad = (' ' * (25 - func.command.length))
     console.log "    #{func.command}#pad#{func.desc}"
   process.exit 1
+
+add-command \get-thread-next, "Get next post in thread, if any", (id) ->
+  console.log get-thread-next id
+
+add-command \get-thread-prev, "Get previous post in thread, if any", (id) ->
+  console.log get-thread-prev id
+
+add-command \get-thread-latest, "Get latest post in thread", (name) ->
+  console.log get-thread-latest name
 
 try
   func = commands[process.argv.2]
