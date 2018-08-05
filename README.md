@@ -63,11 +63,6 @@ organize notes in hierarchies when tags don't cut it. You should also be able
 to edit an article, including its metadata, without breaking links or
 disrupting the integrity of your web. 
 
-## TODO
-
-- explain html generation
-- explain searchable private html reference
-
 ## License
 
 CC0, WTFPL, Kopyleft All Rites Reversed. Do as you like. 
