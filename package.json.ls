@@ -15,6 +15,7 @@ bugs: "http://github.com/polm/deltos/issues"
 license: \WTFPL
 
 dependencies:
+  'better-sqlite': \^4.1.4
   'js-yaml': \^3.2.2
   'markdown-it': \^8.3.1
   'markdown-it-anchor': \^4.0.0

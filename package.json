@@ -12,6 +12,7 @@
   "bugs": "http://github.com/polm/deltos/issues",
   "license": "WTFPL",
   "dependencies": {
+    "better-sqlite3": "^4.1.4",
     "domino": "^1.0.19",
     "fs-extra": "^2.1.2",
     "js-yaml": "^3.2.2",
