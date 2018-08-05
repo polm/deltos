@@ -236,23 +236,3 @@ export get-new-id = (fname-getter=get-filename) ->
     fname = fname-getter id
     if not fs.exists-sync fname
       return id
-
-export new-daily = ->
-  # make a daily note, filling with todos etc.
-  today = local-iso-time!.substr 0, 10
-  # don't create two dailys for today
-  entries = get-all-entries!
-  existing = entries.filter(-> it.daily == today)?0
-  if existing then return get-filename existing.id
-
-  yesterday = entries.filter(-> it.daily == get-yesterday!)?0
-
-  fname = new-note "Daily Notes - #today", [], daily: today
-  fname += '/deltos'
-  fs.append-file-sync fname, "\ndeltos todos\n"
-  fs.append-file-sync fname, dump-todos!
-  fs.append-file-sync fname, "\n\n"
-  if yesterday
-    fs.append-file-sync fname, ".(Yesterday//#{yesterday.id})\n\n"
-  return fname
-

@@ -23,9 +23,6 @@ add-command "title", "Show title of current deltos", ->
   console.log read-config!.title
 add-command "config", "Edit config file", edit-config
 add-command "new [title...]", "Create a note and print the filename", (...args) ->
-  console.log new-note args.join ' '
-add-command "daily", "Create a daily note and open in $EDITOR", ->
-  launch-editor new-daily!
 add-command "post [title...]", "Start a new post in $EDITOR", (...args) ->
   launch-editor new-note (args.join ' ')
 add-command "edit [id]", "Edit an existing post", ->
