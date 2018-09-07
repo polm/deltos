@@ -112,16 +112,6 @@ export launch-editor = (file, after) ->
 
   cp.on \close, -> after?!
 
-export launch-search = ->
-  spawn = require(\child_process).spawn
-  fzf = spawn 'deltos tsv | fzf',
-    stdio: [\inherit, \pipe, \inherit]
-    shell: true
-
-  fzf.stdout.set-encoding \utf-8
-  fzf.stdout.on \data, ->
-    launch-editor get-filename it.trim!.split('\t')[*-1]
-
 export read-config = memoize ->
   try
     yaml fs.read-file-sync CONFIG, \utf-8

@@ -25,17 +25,6 @@ export dump-todos = ->
 export render-tsv-entry = (entry) ->
   [entry.title, (entry.tags.map(-> \# + it).join ','), entry.date.substr(0, 10), entry.id].join '\t'
 
-export dump-tsv = ->
-  get-all-entries-quick -> console.log render-tsv-entry it
-
-export dump-tsv-tagged = (tag) ->
-  dump-tsv-core (get-all-entries! |> filter tagged tag)
-
-dump-tsv-core = (entries) ->
-  # dump a simple tsv file with fields (title, tags, id)
-  for entry in entries
-    console.log render-tsv-entry entry
-
 export grep-entries = (pat) ->
   # smart case - ignore case unless caps in search pattern
   ignorecase = if /[A-Z]/.test pat then '' else \i

@@ -1,6 +1,6 @@
 {launch-editor, deltos-home, get-filename, read-config, edit-config, install-theme} = require \./util
-{read-entry, new-note,dump-tsv,dump-tsv-tagged,dump-todos,grep-entries,philtre-entries} = require \./entries
-{db-init, db-update, db-dump, get-thread-next, get-thread-prev, get-thread-latest} = require \./db
+{read-entry, new-note,dump-todos,grep-entries,philtre-entries} = require \./entries
+{db-init, db-update, db-dump, get-thread, get-thread-next, get-thread-prev, get-thread-latest, dump-tsv} = require \./db
 process.title = \deltos
 
 # Top-level commands - these are called more or less directly by the command line
@@ -34,11 +34,11 @@ add-command "reply [id]", "Reply to a note in a thread", (id) ->
 add-command "post [title...]", "Start a new post in $EDITOR", (...args) ->
   id = new-note (args.join ' ')
   fname = get-filename id
-  launch-editor fname, -> db-update fname
+  launch-editor fname, -> db-update id
 add-command "edit [id]", "Edit an existing post", (id) ->
   launch-editor (get-filename id), -> db-update id
 add-command \search, "Interactive search", ->
-  {launch-search} = require \./util
+  {launch-search} = require \./search
   launch-search!
 add-command "grep [pattern]", "Grep body of notes", (pat) ->
   grep-entries(pat).map -> console.log it
@@ -63,7 +63,6 @@ add-command \json, "Dump all entries to JSON", ->
   {dump-json} = require \./html
   console.log dump-json!
 add-command \todos,  "Dump todo list", -> console.log dump-todos!
-add-command \tagged,  "Dump TSV for posts with tag", dump-tsv-tagged
 add-command \tsv,  "Dump basic TSV", dump-tsv
 add-command \db-init, "Init db", ->
   db-init!
@@ -81,14 +80,9 @@ add-command \help, "Show this help", ->
     console.log "    #{func.command}#pad#{func.desc}"
   process.exit 1
 
-add-command \get-thread-next, "Get next post in thread, if any", (id) ->
-  console.log get-thread-next id
-
-add-command \get-thread-prev, "Get previous post in thread, if any", (id) ->
-  console.log get-thread-prev id
-
-add-command \get-thread-latest, "Get latest post in thread", (name) ->
-  console.log get-thread-latest name
+add-command \get-thread, "Get posts in thread", (name) ->
+  for entry in get-thread name
+    console.log entry.id
 
 try
   func = commands[process.argv.2]

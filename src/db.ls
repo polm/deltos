@@ -8,7 +8,6 @@ db-path = deltos-home + '/deltos.db'
 get-db = ->
   db = new sqlite deltos-home + '/deltos.db'
 
-
 get-prepared-statements = (db) ->
   # to add core entry data
   ss = {}
@@ -80,6 +79,7 @@ export db-update = (id) ->
 
   # create the entry
   create-entry db, ss, entry
+  db.close!
 
 export db-dump = (output) ->
   # quickly read out entries
@@ -91,30 +91,20 @@ export db-dump = (output) ->
     console.log entry
   db.close!
 
-export get-thread-next = (id) ->
-  db = get-db!
-  entry = db.prepare("select * from entry where id = ?").get(id)
-  if not entry or not entry.thread then return id
-  next-id = db.prepare("""select id from entry where date > @date and thread = @thread
-    order by date asc limit 1""")
-    .get(entry)
-  db.close!
-  # default to returning the current item
-  return next-id?.id or id
-
-export get-thread-prev = (id) ->
-  db = get-db!
-  entry = db.prepare("select * from entry where id = ?").get(id)
-  if not entry or not entry.thread then return id
-  next-id = db.prepare("""select id from entry where date < @date and thread = @thread
-    order by date desc limit 1""")
-    .get(entry)
-  db.close!
-  return next-id?.id or id
-
-export get-thread-latest = (name) ->
+export get-thread = (name) ->
   if not name then return ''
   db = get-db!
-  entry = db.prepare("select * from entry where thread = ? order by date desc limit 1").get(name)
-  if not entry then return ''
-  return entry.id
+  return db.prepare("select * from entry where thread = ? order by date desc").all(name)
+
+export dump-tsv = (printer) ->
+  if not printer then printer = console.log
+  db = get-db!
+  tagdb = get-db!
+  tag-query = tagdb.prepare("select tag from entry_tag where entry_id = ?")
+  entries = db.prepare("select * from entry order by date desc").iterate!
+  until (iterator = entries.next!).done
+    entry = iterator.value
+    tags = tag-query.all(entry.id).map(-> \# + it.tag).join ','
+    printer [entry.title, tags, entry.date.substr(0,10), entry.id].join '\t'
+  db.close!
+  tagdb.close!
