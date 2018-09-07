@@ -1,6 +1,6 @@
 {
   "name": "deltos",
-  "version": "1.4.0",
+  "version": "1.5.1",
   "description": "Deltos is a note management tool using flat files.",
   "keywords": [
     "notes",
@@ -12,21 +12,19 @@
   "bugs": "http://github.com/polm/deltos/issues",
   "license": "WTFPL",
   "dependencies": {
-    "better-sqlite3": "^4.1.4",
-    "domino": "^1.0.19",
-    "fs-extra": "^2.1.2",
+    "better-sqlite": "^4.1.4",
     "js-yaml": "^3.2.2",
     "markdown-it": "^8.3.1",
     "markdown-it-anchor": "^4.0.0",
-    "markdown-it-footnote": "^3.0.1",
-    "markdown-it-highlightjs": "^3.0.0",
-    "mkdirp": "^0.5.1",
-    "philtre": "^1.0.2",
+    "uuid": "^3.0.0",
     "prelude-ls": "^1.1.1",
+    "domino": "^1.0.19",
     "rss": "^1.0.0",
+    "mkdirp": "^0.5.1",
     "searchy": "^0.0.23",
-    "split": "^1.0.0",
-    "uuid": "^3.1.0"
+    "philtre": "^1.0.2",
+    "fs-extra": "^2.1.2",
+    "split": "^1.0.0"
   },
   "devDependencies": {
     "livescript": "^1.4.0"
