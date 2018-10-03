@@ -247,16 +247,29 @@ build-site-html = (root, entries) ->
       fs.symlink-sync orig + '/' + fname, "#{root}#{suffix}/#fname"
 
 build-rss = (root, config, entries) ->
+  # first make the default RSS
+  make-rss-file config, root, \index, entries
+
+  # now make other files
+  config.rss = config.rss or {}
+  {philtre} = require \philtre
+  for name, query of config.rss
+    entries-current = philtre query, entries
+    make-rss-file config, root, name, entries-current
+
+make-rss-file = (config, root, name, entries) ->
   rss = new RSS {
     title: config.title
     description: config.description
     generator: \deltos
     site_url: config.url
-    feed_url: config.url + "/index.rss"
+    feed_url: config.url + "/#name.rss"
     pubDate: new Date!
     author: config.author
   }
 
+  # This determines the number of entries in the feed.
+  # Could be a config var but haven't felt the need.
   for entry in entries.slice 0, 5
    rss.item do
      title: entry.title
@@ -266,4 +279,4 @@ build-rss = (root, config, entries) ->
      url: entry.link
      guid: entry.link.split('#').0
 
-  fs.write-file-sync (root + "index.rss"), rss.xml!
+  fs.write-file-sync (root + name + ".rss"), rss.xml!
