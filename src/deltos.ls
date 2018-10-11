@@ -49,8 +49,7 @@ add-command "render [id]", "Render [id] as HTML", ->
   {render} = require \./html
   console.log render it
 add-command \build-site, "Build static HTML", ->
-  {build-site, build-private-reference} = require \./html
-  build-private-reference!
+  {build-site} = require \./html
   build-site!
 add-command \clean, "Delete built HTML etc.", ->
   fs = require \fs-extra
