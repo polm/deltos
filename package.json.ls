@@ -48,9 +48,6 @@ main: './lib'
 bin:
   deltos: './bin/deltos'
 
-scripts:
-  test: \./test.sh
-
 prefer-global: true
 
 repository:

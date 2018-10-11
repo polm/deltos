@@ -45,9 +45,6 @@
   "bin": {
     "deltos": "./bin/deltos"
   },
-  "scripts": {
-    "test": "./test.sh"
-  },
   "preferGlobal": true,
   "repository": {
     "type": "git",
