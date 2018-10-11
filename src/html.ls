@@ -1,5 +1,5 @@
 fs = require \fs-extra
-{markdown, get-mtime, memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-slug} = require \./util
+{markdown, get-mtime, memoize, is-in, tagged, yaml, yaml-dump, deltos-home, read-config, get-filename, get-url} = require \./util
 {get-all-entries, get-raw-entry} = require \./entries
 {map, take, sort-by, sort-with, reverse} = require \prelude-ls
 {dirname} = require \path
@@ -9,7 +9,7 @@ fs = require \fs-extra
 domino = RSS = eep = Section = {}
 
 export render = ->
-  it.link = '/by-id/' + it.id + \/ + "#" + get-slug it
+  it.link = get-url it
   build-page-html entry-rules!, it
 
 export build-private-reference = ->

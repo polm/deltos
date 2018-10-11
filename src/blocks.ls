@@ -2,7 +2,7 @@
 child_process = require \child_process
 {get-all-entries} = require \./entries
 {map, sort-by, sort-with, reverse} = require \prelude-ls
-{markdown, deltos-home, read-config, is-in, tagged, get-filename, get-slug, get-url} = require \./util
+{markdown, deltos-home, read-config, is-in, tagged, get-filename, get-url} = require \./util
 {philtre} = require \philtre
 width = read-config!.width or 500
 exec = require('child_process').exec-sync
@@ -107,7 +107,6 @@ build-image-list-page = (entries) ->
 to-dated-markdown-link = ->
   tags = it.tags.filter(-> it != \published).join ", "
   day = "<span class=\"date\">" + (it.date.substr 0, 10) + "</span>"
-  #"- [#{it.title}](/by-id/#{it.id}\##{get-slug it}) #day <span class=\"tags\">#{tags}</span>"
   "- #day - [#{it.title}](#{get-url it})"
 
 to-markdown-link = ->
