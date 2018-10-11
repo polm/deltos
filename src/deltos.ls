@@ -19,6 +19,7 @@ add-command "init", "Set up DELTOS_HOME", ->
   mkdirp.sync deltos-home + \by-id
   mkdirp.sync deltos-home + \site/by-id
   mkdirp.sync deltos-home + \private/by-id
+  db-init!
 add-command "install-theme [git url]", "Install theme", install-theme
 add-command "title", "Show title of current deltos", ->
   console.log read-config!.title
