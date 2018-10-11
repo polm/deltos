@@ -127,17 +127,14 @@ export install-theme = (theme-git-url) ->
   try
     fs.mkdir-sync "#deltos-home/site"
     fs.mkdir-sync "#deltos-home/site/by-id"
-    fs.mkdir-sync "#deltos-home/private"
-    fs.mkdir-sync "#deltos-home/private/by-id"
   catch
     \ok # probably already existed, don't worry
 
-  # symlink most files into site/ and private/
+  # symlink most files into site/
   for file in fs.readdir-sync "#deltos-home/theme"
     if file == "single.html" then continue
     if file == "README.md" then continue
     fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/site/#file"
-    fs.symlink-sync "#deltos-home/theme/#file", "#deltos-home/private/#file"
 
 export get-mtime = (fname) ->
   try

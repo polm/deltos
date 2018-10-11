@@ -18,7 +18,6 @@ add-command "init", "Set up DELTOS_HOME", ->
   mkdirp = require \mkdirp
   mkdirp.sync deltos-home + \by-id
   mkdirp.sync deltos-home + \site/by-id
-  mkdirp.sync deltos-home + \private/by-id
   db-init!
 add-command "install-theme [git url]", "Install theme", install-theme
 add-command "title", "Show title of current deltos", ->
@@ -51,11 +50,9 @@ add-command "render [id]", "Render [id] as HTML", ->
 add-command \build-site, "Build static HTML", ->
   {build-site} = require \./html
   build-site!
-add-command \clean, "Delete built HTML etc.", ->
+add-command \clean, "Delete built HTML", ->
   fs = require \fs-extra
-  dirs = [deltos-home + '/site/by-id/',
-          deltos-home + '/private/by-id/']
-  fs.remove-sync deltos-home + '/cache.json'
+  dirs = [deltos-home + '/site/by-id/']
   for dir in dirs
     for fname in fs.readdir-sync dir
       fs.remove-sync dir + fname
