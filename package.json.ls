@@ -15,18 +15,18 @@ bugs: "http://github.com/polm/deltos/issues"
 license: \WTFPL
 
 dependencies:
-  'better-sqlite': \^4.1.4
+  'better-sqlite3': \^5.0.1
   'js-yaml': \^3.2.2
-  'markdown-it': \^8.3.1
-  'markdown-it-anchor': \^4.0.0
+  'markdown-it': \^8.4.1
+  'markdown-it-anchor': \^5.0.2
   'uuid': \^3.0.0
   'prelude-ls': \^1.1.1
-  domino: \^1.0.19
+  domino: \^2.1.0
   rss: \^1.0.0
   mkdirp: \^0.5.1
   searchy: \^0.0.23
   philtre: \^1.0.2
-  'fs-extra': \^2.1.2
+  'fs-extra': \^7.0.0
   split: \^1.0.0
 
 dev-dependencies:
