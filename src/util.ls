@@ -35,8 +35,6 @@ Markdown = {}
 export markdown = ->
   if not Markdown.render
     Markdown := require(\markdown-it)(html: true)
-             .use require \markdown-it-footnote
-             .use require \markdown-it-highlightjs
              .use( (require \markdown-it-anchor), {permalink: true,
              permalinkSymbol: \☙, level: 1, permalinkBefore: true})
   Markdown.render it
