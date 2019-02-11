@@ -113,7 +113,7 @@ to-markdown-link = ->
   "- [#{it.title}](#{get-url it})"
 
 to-image-block = ->
-  out = "<a href=\"/by-id/#{it.id}\">"
+  out = "<a href=\"#{get-url it}\">"
   out += '<div class="img img-block">'
   if it.first-image
     out += "<img src=\"#{it.first-image}\">"
