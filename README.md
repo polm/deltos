@@ -1,5 +1,5 @@
 
-![deltos logo](http://i.imgur.com/HUqla3j.png)
+![deltos logo](deltos-person.jpg)
 
 # Deltos
 
