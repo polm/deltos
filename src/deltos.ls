@@ -30,9 +30,12 @@ add-command "reply [id]", "Reply to a note in a thread", (id) ->
   if not base.thread
     console.log "No thread!"
     process.exit 1
-  console.log get-filename new-note base.title, base.tags, thread: base.thread, 'reply-to': id
+  new-id = new-note base.title, base.tags, thread: base.thread, 'reply-to': id
+  db-update new-id # make sure it's indexed
+  console.log get-filename new-id
 add-command "post [title...]", "Start a new post in $EDITOR", (...args) ->
   id = new-note (args.join ' ')
+  db-update id # update now so it's in the db
   fname = get-filename id
   launch-editor fname, -> db-update id
 add-command "edit [id]", "Edit an existing post", (id) ->
