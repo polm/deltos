@@ -1,5 +1,5 @@
 name: \deltos
-version: \1.5.3
+version: \1.5.4
 
 description: "Deltos is a note management tool using flat files."
 
@@ -15,7 +15,7 @@ bugs: "http://github.com/polm/deltos/issues"
 license: \WTFPL
 
 dependencies:
-  'better-sqlite3': \^5.0.1
+  'better-sqlite3': \^5.4.3
   'js-yaml': \^3.2.2
   'markdown-it': \^8.4.1
   'markdown-it-anchor': \^5.0.2
