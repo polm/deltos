@@ -264,12 +264,18 @@ make-rss-file = (config, root, name, entries) ->
   # This determines the number of entries in the feed.
   # Could be a config var but haven't felt the need.
   for entry in entries.slice 0, 5
-   rss.item do
-     title: entry.title
-     date: entry.date
-     description: entry.body
-     categories: entry.tags
-     url: entry.link
-     guid: entry.link.split('#').0
+
+    # a hack to make links absolute
+    body = entry.body
+                .replace(/href="\//g, "href=\"#{config.url}/")
+                .replace(/src="\//g, "src=\"#{config.url}/")
+
+    rss.item do
+      title: entry.title
+      date: entry.date
+      description: body
+      categories: entry.tags
+      url: config.url + entry.link
+      guid: config.url + entry.link.split('#').0
 
   fs.write-file-sync (root + name + ".rss"), rss.xml!
