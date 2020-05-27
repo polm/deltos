@@ -72,7 +72,10 @@ export read-entry = (id) ->
   if metadata.parents # add some nice text
     if metadata.parents.length == 1
       collection = read-entry metadata.parents.0
-      metadata.collections = "This post is part of a collection on <a href=\"#{get-url collection}\">#{collection.title}</a>."
+      if metadata.lang == 'ja'
+        metadata.collections = "この投稿は<a href=\"#{get-url collection}\">#{collection.title}</a>のコレクションに含まれています。"
+      else
+        metadata.collections = "This post is part of a collection on <a href=\"#{get-url collection}\">#{collection.title}</a>."
     else
       metadata.collections = "This post is part of collections on "
       colls = []
