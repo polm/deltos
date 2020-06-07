@@ -31,7 +31,7 @@ blocks.img = (block, entry, big=false) ->
     exec "convert \"#src-file\" -resize #{width}x1000 #thumbroot/#fname.l.#ftype"
 
   tag = "<a href=\"#{big-src}\"><img src=\"#{img-src}\"/></a>"
-  caption = if words.length then ('<p class="caption">' + markdown(words.join(' ')).substr 3) else ''
+  caption = if words.length then ('<figcaption>' + markdown(words.join(' ')).substr(3) + '</figcaption>') else ''
   # for meta-tags
   if not entry.first-image
     cropped-header = "#thumbroot/#fname.c.#ftype"
@@ -42,9 +42,7 @@ blocks.img = (block, entry, big=false) ->
 
     entry.first-image = "/by-id/#{entry.id}/#fname"
 
-  cls = 'img'
-  if big then cls += ' big-img'
-  return "<div class=\"#cls\">" + tag + caption + "</div>"
+  return "<figure>" + tag + caption + "</figure>"
 
 blocks['img-big'] = (block, entry) ->
   blocks.img block, entry, true
@@ -157,7 +155,7 @@ blocks.embed = (block, entry) ->
   if lines.length > 1 # we have a cache
     return embed-wrapper lines.slice(1).join '\n'
   url = lines.0.split(' ').slice(1).join ' '
-  result = child_process.exec-sync "OEMBED_WIDTH=#width kinkan '#url'"
+  result = child_process.exec-sync "bontan -w #width -u '#url'"
   fname = get-filename entry.id + \/deltos
   raw-file = fs.read-file-sync fname, \utf-8
   raw-file = raw-file.split(lines.0).join(lines.0 + "\n" + result)
