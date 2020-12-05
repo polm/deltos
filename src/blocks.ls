@@ -67,7 +67,8 @@ blocks.archive = (block, entry) ->
   build-list-page(entries, to-markdown-link).join "\n"
 
 blocks.children = (block, entry) ->
-  build-list-page(get-child-entries entry).join "\n"
+  children = get-child-entries entry
+  build-list-page(children, to-markdown-link, false).join "\n"
 
 get-child-entries = (parent) ->
   get-all-entries!.filter(-> -1 != parent.children?.index-of it.id)
@@ -87,13 +88,16 @@ blocks.recent = (block, entry, list-builder=build-image-list-page) ->
 blocks['recent-text'] = (block, entry) ->
   blocks.recent block, entry, build-list-page
 
-build-list-page = (entries, linker=to-markdown-link) ->
+build-list-page = (entries, linker=to-markdown-link, remove-hidden=true) ->
   if not entries then entries = get-all-entries!
 
-  # remove hidden entries
   entries = entries
     .filter (tagged \published)
-    .filter (-> not tagged \hidden, it)
+
+  # remove hidden entries
+  if remove-hidden
+    entries = entries
+      .filter (-> not tagged \hidden, it)
 
   sort-by (.date), entries |>
     reverse |>
