@@ -103,10 +103,10 @@ html-init = ->
 
 build-page-core = (eep, content) ->
   # This builds a whole page with <head> etc.
+  date = content.date
   if content.raw-body
     content.body = read-entry-body content
   if tagged \hidden, content
-    date = content.date
     content.date = '' # hidden pages shouldn't show dates
   template = get-template content.template
   # if the entry has not been updated, this can be skipped
