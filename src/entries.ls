@@ -83,7 +83,10 @@ export read-entry = (id) ->
         collection = read-entry coll
         colls.push "<a href=\"#{get-url collection}\">#{collection.title}</a>"
       colls[*-1] = "and " + colls[*-1] + "."
-      metadata.collections += colls.join ", "
+      joiner = ", "
+      if colls.length == 2
+        joiner = " "
+      metadata.collections += colls.join joiner
 
   metadata.raw-body = body
   return metadata
