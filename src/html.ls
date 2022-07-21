@@ -141,9 +141,7 @@ add-meta-tags = (dom, entry) ->
   # set the meta description
   dom.query-selector("meta[name=\"description\"]").set-attribute \content, metadata.description
 
-  # Twitter's summary_large_image looks better when an image is available,
-  # but looks horrible with small logos, so adjust accordingly
-  card-type = if entry.meta-image then \summary_large_image else \summary
+  card-type = \summary_large_image
   set-meta dom, \twitter:card, card-type
 
 default-image = (dom) ->
