@@ -106,6 +106,7 @@ build-page-core = (eep, content) ->
   if content.raw-body
     content.body = read-entry-body content
   if tagged \hidden, content
+    date = content.date
     content.date = '' # hidden pages shouldn't show dates
   template = get-template content.template
   # if the entry has not been updated, this can be skipped
@@ -115,6 +116,8 @@ build-page-core = (eep, content) ->
     add-meta-tags template, content
   else
     template = {outerHTML: false}
+  # restore the date
+  content.date = date
   return {dom: template, entry: content}
 
 build-page-html = (eep, content) ->
